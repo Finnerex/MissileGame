@@ -6,7 +6,7 @@ namespace Utility
     public class UIController : MonoBehaviour
     {
         public static UIController Instance;
-        
+
         public CircleGraphic missileLockCircle;
         public RectTransform missileGimbalCircle;
 

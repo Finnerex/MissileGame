@@ -14,8 +14,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   prefab: {fileID: 0}
   size: 2
+  scaleFactor: 0
   isCaged: 0
   fieldOfView: 3.5
   maxGimbalAngle: 50
   lockRange: 15000
-  minTemperature: 1
+  minTemperature: 0

@@ -36,17 +36,19 @@ namespace Aerodynamics
             forceAndTorque.q += Vector3.Cross(relativePosition, forceAndTorque.p);
             // forceAndTorque.q += -_transform.forward * (dynamicPressure * area * (area * 0.5f));
             
+            Debug.DrawLine(_transform.position, transform.position + (forceMagnitude * 0.1f) * _transform.up);
+            
 
             return forceAndTorque;
         }
 
 
-        private void OnDrawGizmos()
-        {
-            Gizmos.color = Color.red;
-            Gizmos.DrawRay(transform.position, transform.up);
-            Gizmos.color = Color.green;
-            Gizmos.DrawRay(transform.position, transform.right);
-        }
+        // private void OnDrawGizmos()
+        // {
+        //     Gizmos.color = Color.red;
+        //     Gizmos.DrawRay(transform.position, transform.up);
+        //     Gizmos.color = Color.green;
+        //     Gizmos.DrawRay(transform.position, transform.right);
+        // }
     }
 }

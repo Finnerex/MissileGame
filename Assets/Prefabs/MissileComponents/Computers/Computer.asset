@@ -14,6 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   prefab: {fileID: 2974828793398642274, guid: 1b9cc63f8e3a80b4e8ae5c06a038fa0a, type: 3}
   size: 2
+  scaleFactor: 0
   guidanceType: 2
   hasInertialGuidance: 0
-  proportionalityConstant: 80
+  proportionalityConstant: 300

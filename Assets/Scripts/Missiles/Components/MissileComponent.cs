@@ -7,6 +7,7 @@ namespace Missiles.Components
     {
         public GameObject prefab;
         public int size;
+        public float scaleFactor;
         [NonSerialized] public GameObject SpawnedObject; // TODO: this is not going to work if there are multiple but might be fine
     }
 }

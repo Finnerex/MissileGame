@@ -31,10 +31,10 @@ namespace Missiles
             Missiles.Dequeue().Fire();
         }
 
-        public void AddMissile(Vector3 position, Quaternion rotation, MissilePreset preset, BodyComponent body)
+        public void AddMissile(Vector3 position, Quaternion rotation, MissilePreset preset)
         {
             Missile missile = Instantiate(defaultMissilePrefab, position, rotation, transform);
-            Instantiate(body.prefab, position, rotation, missile.transform);
+            Instantiate(preset.body.prefab, position, rotation, missile.transform);
             Instantiate(preset.avionics.prefab, position - missile.transform.forward * 1.85f, rotation, missile.transform);
             
             missile.seeker = preset.seeker;

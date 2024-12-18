@@ -11,6 +11,8 @@ namespace Missiles.Components
         public bool proximityFuse;
         public float proximityRadius;
 
+        [NonSerialized] private static readonly Collider[] Exploded = new Collider[20];
+
         public bool CheckExplode(Vector3 position)
         {
             bool shouldExplode = proximityFuse && Physics.CheckSphere(position, proximityRadius, LayerMask.GetMask("Target"));
@@ -24,17 +26,24 @@ namespace Missiles.Components
         public void Explode(Vector3 position)
         {
             Instantiate(EffectController.Instance.explosionEffect, position, Quaternion.identity);
-            Collider[] exploded = new Collider[20];
 
-            int numberBlown = Physics.OverlapSphereNonAlloc(position, explosionRadius, exploded);
+            int numberBlown = Physics.OverlapSphereNonAlloc(position, explosionRadius, Exploded);
 
             for (int i = 0; i < numberBlown; i++)
             {
-                if (!exploded[i].TryGetComponent(out Rigidbody rb)) continue;
+                Vector3 displacement = Exploded[i].transform.position - position;
+
+                if (Exploded[i].TryGetComponent(out Damageable d))
+                {
+                    Debug.Log("bro was damageable and was hit with " + (500 + explosionRadius) / (displacement.magnitude + 1) + " damage");
+                    d.Damage((500 + explosionRadius) / (displacement.magnitude + 1));
+                }
+
+                if (Exploded[i].TryGetComponent(out Rigidbody rb))
+                    rb.AddExplosionForce(5000, position, explosionRadius);
+                    // rb.AddForceAtPosition(displacement.normalized / (0.0001f * displacement.magnitude + 1), position, ForceMode.Impulse);
                 
-                Vector3 displacement = rb.transform.position - position;
-                rb.AddForceAtPosition(displacement.normalized / (0.0001f * (0.5f + displacement.magnitude)), position, ForceMode.Impulse);
-                Debug.Log($"added a force to object {rb.name} {displacement.normalized / (0.0001f * (0.5f + displacement.magnitude))}");
+                
             }
 
         }

@@ -141,6 +141,7 @@ Material:
     - _ATDistance: 1
     - _AddPrecomputedVelocity: 0
     - _AlbedoAffectEmissive: 0
+    - _Alpha: 1
     - _AlphaCutoff: 0.5
     - _AlphaCutoffEnable: 0
     - _AlphaCutoffPostpass: 0.5
@@ -241,6 +242,7 @@ Material:
     - _Thickness: 1
     - _TransmissionEnable: 1
     - _TransmissionMask: 1
+    - _Transparency: 1
     - _TransparentBackfaceEnable: 0
     - _TransparentCullMode: 1
     - _TransparentDepthPostpassEnable: 0

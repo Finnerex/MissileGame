@@ -95,18 +95,13 @@ namespace Missiles
             }
             
         }
-        
-        // public void UpdateCircles(float distance)
-        // {
-        //     _seekerIcon.distance = Mathf.Clamp(distance, 0, 500);
-        // }
 
         private void FixedUpdate()
         {
             
             if (!_selected && !_fired) return;
             
-            if (_targetTransform is not null)
+            if (_targetTransform != null)
                 seeker.LookAt(seekerHead, _targetTransform.position, _transform.forward, _fired);
             
             _targetTransform = seeker.GetTargetPosition(seekerHead);

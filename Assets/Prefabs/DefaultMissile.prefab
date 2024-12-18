@@ -4971,7 +4971,7 @@ MonoBehaviour:
   seeker: {fileID: 11400000, guid: 5afead34a1043ed4094ce55fde8d48f6, type: 2}
   computer: {fileID: 11400000, guid: 5ea0d6f8c8eb1284f91ad87824aa9d7e, type: 2}
   warhead: {fileID: 11400000, guid: 0a4e78334a2eba646b6669208a402576, type: 2}
-  booster: {fileID: 11400000, guid: 1ac4c49cd46d86742accc2bff4e0eb28, type: 2}
+  booster: {fileID: 11400000, guid: 098d702180a0627499d2751426114e64, type: 2}
   avionics: {fileID: 11400000, guid: ceb217c386bbb1340b43fcc4fa476f4d, type: 2}
   parentRigidbody: {fileID: 0}
   aeroBody: {fileID: 4904873054263126436}
@@ -5409,8 +5409,8 @@ ParticleSystem:
     startLifetime:
       serializedVersion: 2
       minMaxState: 3
-      scalar: 0.4
-      minScalar: 0.2
+      scalar: 0.35
+      minScalar: 0.15
       maxCurve:
         serializedVersion: 2
         m_Curve:
@@ -5580,8 +5580,8 @@ ParticleSystem:
     startSize:
       serializedVersion: 2
       minMaxState: 3
-      scalar: 1.4
-      minScalar: 1.2
+      scalar: 1
+      minScalar: 0.8
       maxCurve:
         serializedVersion: 2
         m_Curve:
@@ -6163,7 +6163,7 @@ ParticleSystem:
     rateOverTime:
       serializedVersion: 2
       minMaxState: 0
-      scalar: 65
+      scalar: 60
       minScalar: 10
       maxCurve:
         serializedVersion: 2

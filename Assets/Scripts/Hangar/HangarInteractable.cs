@@ -8,7 +8,7 @@ namespace Hangar
         [SerializeField] private GameObject ui;
         [SerializeField] private GameObject cameraPoint;
 
-        public void OnInteract()
+        public virtual void OnInteract()
         {
             ui.SetActive(true);
             Cursor.visible = true;
@@ -27,15 +27,18 @@ namespace Hangar
             if (!ui.activeSelf)
                 return;
             
-            if (!Input.GetKey(KeyCode.Escape))
-                return;
-            
+            if (Input.GetKey(KeyCode.Escape))
+                Exit();
+        }
+
+        protected virtual void Exit()
+        {
             ui.SetActive(false);
             Cursor.visible = false;
             Cursor.lockState = CursorLockMode.Locked;
             // HangarController.Instance.orbitCamera.center = HangarController.Instance.defaultOrbitPoint;
             HangarController.Instance.orbitCamera.enabled = true;
-
         }
+        
     }
 }

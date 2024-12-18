@@ -15,19 +15,34 @@ namespace Player
         [SerializeField] private Vector3 trim = Vector3.zero;
         [SerializeField] private Camera cam;
 
+        [SerializeField] private GameObject thrusterA;
+        [SerializeField] private GameObject thrusterB;
+        [SerializeField] private float maxThrusterJiggleStrength = 0.0025f;
+        [SerializeField] private float afterburnerThrottlePct = 0.7f;
+
         [SerializeField] private TextMeshProUGUI instructorText;
         [SerializeField] private TextMeshProUGUI geeForceText;
         
         private Transform _transform;
         private Vector3 _lastVelocity;
         private Vector3 _control;
+        private Material _thrusterAMaterial;
+        private Material _thrusterBMaterial;
         
+        private static readonly int Length = Shader.PropertyToID("_Length");
+        private static readonly int JiggleStrength = Shader.PropertyToID("_JiggleStrength");
+        private static readonly int Alpha = Shader.PropertyToID("_Alpha");
+
         private const float RollThreshold = 2;
         
         
         private void Start()
         {
             _transform = transform;
+            _thrusterAMaterial = thrusterA.GetComponent<Renderer>().material;
+            _thrusterBMaterial = thrusterB.GetComponent<Renderer>().material;
+            
+            SetThrusterMaterialProperties();
         }
 
         private void Update()
@@ -72,10 +87,14 @@ namespace Player
             _control = Util.VectorClampComponents(_control, -1, 1);
             aeroBody.SetControl(trim + _control /*+ mouseControl*/);
 
+            
             if (Input.GetKey(KeyCode.LeftShift))
                 engine.Throttle += throttleStep * Time.deltaTime;
-            if (Input.GetKey(KeyCode.LeftControl))
+            else if (Input.GetKey(KeyCode.LeftControl))
                 engine.Throttle -= throttleStep * Time.deltaTime;
+
+            if (Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.LeftShift))
+                SetThrusterMaterialProperties();
             
             
             DrawInstructor();
@@ -117,6 +136,32 @@ namespace Player
                 $"SPD    {(int)(speed * 3.6f)} km/h\n" +
                 $"MACH   {speed / (A0 - K * _transform.position.y):F2}\n" +
                 $"ALT    {(int)_transform.position.y} m";
+        }
+
+        private void SetThrusterMaterialProperties()
+        {
+            // i dont like how im repeating things here
+            if (engine.Throttle < afterburnerThrottlePct && thrusterA.activeSelf)
+            {
+                thrusterA.SetActive(false);
+                thrusterB.SetActive(false);
+            }
+            else if (engine.Throttle >= afterburnerThrottlePct)
+            {
+                if (!thrusterA.activeSelf)
+                {
+                    thrusterA.SetActive(true);
+                    thrusterB.SetActive(true);
+                }
+                
+                _thrusterAMaterial.SetFloat(Length, 1 - engine.Throttle * 0.5f);
+                _thrusterAMaterial.SetFloat(Alpha, (engine.Throttle - afterburnerThrottlePct) / (1 - afterburnerThrottlePct));
+                _thrusterAMaterial.SetFloat(JiggleStrength, maxThrusterJiggleStrength * engine.Throttle);
+
+                _thrusterBMaterial.SetFloat(Length, 1 - engine.Throttle * 0.5f);
+                _thrusterBMaterial.SetFloat(Alpha, (engine.Throttle - afterburnerThrottlePct) / (1 - afterburnerThrottlePct));
+                _thrusterBMaterial.SetFloat(JiggleStrength, maxThrusterJiggleStrength * engine.Throttle);
+            }
         }
     }
 }

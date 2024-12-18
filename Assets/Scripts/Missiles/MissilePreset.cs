@@ -11,5 +11,10 @@ namespace Missiles
         public WarheadComponent warhead;
         public BoosterComponent booster;
         public AvionicsComponent avionics;
+        public BodyComponent body;
+
+        public bool IsValid => seeker != null && computer != null &&
+                               warhead != null && booster != null &&
+                               avionics != null && body != null;
     }
 }

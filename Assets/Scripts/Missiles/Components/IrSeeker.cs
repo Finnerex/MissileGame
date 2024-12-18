@@ -9,31 +9,37 @@ namespace Missiles.Components
 
         [SerializeField] private float minTemperature;
         
+        // TODO: Make this see the sun
         public override Transform GetTargetPosition(Transform thisTransform)
         {
-            Debug.Log("position is being gotten from ir seeker!!");
+            // Debug.Log("position is being gotten from ir seeker!!");
+
+            Vector3 position = thisTransform.position;
             
-            int numberOfObjects = ConeCastNonAlloc(thisTransform.position, thisTransform.forward, HitObjects, fieldOfView * 0.5f, lockRange,
+            int numberOfObjects = OverlapConeNonAlloc(position, thisTransform.forward, HitObjects, fieldOfView * 0.5f, lockRange,
                 LayerMask.GetMask("Target"));
 
-            return FilterTarget(HitObjects, numberOfObjects);
+            return FilterTarget(HitObjects, numberOfObjects, position);
         }
 
-        private Transform FilterTarget(Collider[] targets, int numTargets)
+        private Transform FilterTarget(Collider[] targets, int numTargets, Vector3 position)
         {
             TemperatureVolume highestTemp = null;
+            float highestPerceivedTemp = 0;
             
             for (int i = 0; i < numTargets; i++)
             {
                 if (!targets[i].TryGetComponent(out TemperatureVolume volume))
                     continue;
 
+                float perceivedTemp = volume.temperature / (position - volume.transform.position).sqrMagnitude;
+
                 // TODO: make perceived temperature diminish with distance
-                if ((highestTemp is null || volume.temperature > highestTemp.temperature) &&
-                    volume.temperature > minTemperature)
+                if ((highestTemp is null || perceivedTemp > highestPerceivedTemp) && perceivedTemp > minTemperature)
                 {
                     highestTemp = volume;
-                    Debug.Log("highest temp is now: " + volume.temperature);
+                    highestPerceivedTemp = perceivedTemp;
+                    // Debug.Log("highest temp is now: " + volume.temperature);
                 }
             }
 

@@ -7,6 +7,8 @@ namespace Utility
     {
 
         [SerializeField] private bool willExplode;
+        [SerializeField] private bool producesSmoke;
+        
         
         public float maxHealth = 100;
         public float Health { get; private set; }
@@ -15,12 +17,16 @@ namespace Utility
         {
             Health = maxHealth;
         }
-        
+
+
         public void Damage(float amount)
         {
             Health -= amount;
 
-            if (!(Health <= 0)) return;
+            if (producesSmoke)
+                Destroy(Instantiate(EffectController.Instance.smokeEffect, transform.position, Quaternion.identity), amount * amount);
+            
+            if (Health > 0) return;
             
             if (willExplode)
                 Instantiate(EffectController.Instance.explosionEffect, transform.position, Quaternion.identity);
@@ -28,6 +34,6 @@ namespace Utility
             Health = 0;
             Destroy(gameObject);
         }
-
+        
     }
 }

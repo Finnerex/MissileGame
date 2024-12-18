@@ -1,5 +1,4 @@
-﻿using System;
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace Utility
 {
@@ -19,7 +18,7 @@ namespace Utility
         private void Awake()
         {
             if (cam == null)
-                cam = GameObject.FindWithTag("MainCamera").GetComponent<Camera>();
+                cam = Camera.main;/*GameObject.FindWithTag("MainCamera").GetComponent<Camera>();*/
         }
 
 
@@ -27,7 +26,10 @@ namespace Utility
         {
             Vector3 screenPoint = cam.WorldToScreenPoint(_transform.position + _transform.forward * distance);
             
-            icon.position = screenPoint;
+            if (screenPoint.z >= 0) 
+                icon.position = screenPoint;
+
         }
+
     }
 }

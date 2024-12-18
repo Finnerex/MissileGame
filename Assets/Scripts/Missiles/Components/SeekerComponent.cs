@@ -17,7 +17,9 @@ namespace Missiles.Components
         
         public abstract Transform GetTargetPosition(Transform thisTransform);
 
-        public static int ConeCastNonAlloc(Vector3 origin, Vector3 direction, Collider[] result, float halfAngle, float distance, int layerMask)
+        // TODO: Find a better solution for a cone cast
+        // this one will end up just looking at every object on one side of the player as distance gets larger
+        public static int OverlapConeNonAlloc(Vector3 origin, Vector3 direction, Collider[] result, float halfAngle, float distance, int layerMask)
         {
             int size = Physics.OverlapSphereNonAlloc(origin + direction * (distance * 0.5f), distance * 0.5f, result, layerMask);
 

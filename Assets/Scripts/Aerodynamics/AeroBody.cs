@@ -31,6 +31,8 @@ namespace Aerodynamics
             rb.AddForce(currentForceAndTorque.p);
             rb.AddTorque(currentForceAndTorque.q);
 
+            Debug.DrawLine(transform.position, transform.position + currentForceAndTorque.p * 0.1f);
+
         }
         
         private BiVector3 CalculateAerodynamicForces(Vector3 velocity, Vector3 angularVelocity, Vector3 centerOfMass)
@@ -38,7 +40,7 @@ namespace Aerodynamics
             BiVector3 forceAndTorque = new BiVector3();
             foreach (var surface in aeroSurfaces)
             {
-                if (surface is null) continue;
+                if (surface == null) continue;
                 
                 Vector3 relativePosition = surface.transform.position - centerOfMass;
                 forceAndTorque += surface.CalculateForces(velocity + Vector3.Cross(angularVelocity, relativePosition),
