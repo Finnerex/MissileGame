@@ -1,16 +1,20 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using Missiles;
 using Missiles.Components;
 using TMPro;
+using Unity.VisualScripting;
 using UnityEngine;
+using Utility;
 
 
 namespace Hangar
 {
     public class MissileWorkbench : HangarInteractable
     {
-        public MissilePreset preset;
-        public Dictionary<string, MissilePreset> SavedPresets = new(); // wont be this when they actually get saved
+        public MissilePreset currentPreset;
+        [NonSerialized] public SerializableDictionary<string, MissilePreset> SavedPresets;
 
         [SerializeField] private Transform missileParent;
         [SerializeField] private TMP_InputField textEntryField;
@@ -23,31 +27,33 @@ namespace Hangar
 
         // public TechTreeNode currentResearchNode;
 
-        // i dont know if i should use instance or getcomponent
-        // my heart says static is bad but my brain says getcomponent is slow
         public static MissileWorkbench Instance;
 
         private void Awake()
         {
             Instance = this;
             _presetMenuContent = presetsMenu.transform.Find("Viewport/Content");
+            SavedPresets = PersistentDataHandler.LoadObjectOrNew<SerializableDictionary<string, MissilePreset>>("MissilePresets");
         }
 
         public bool AddMissileComponent(MissileComponent component)
         {
 
+            Debug.Log("adding the jawn called: " + component.name);
+            
             if (component is BodyComponent body)
             {
-                ReplaceComponent(ref preset.body, body);
+                Debug.Log("buddy is a body");
+                ReplaceComponent(ref currentPreset.body, body);
                 
                 _remainingCapacity = body.size;
 
                 // still a little ugly
-                ReplaceComponent(ref preset.seeker, null);
-                ReplaceComponent(ref preset.computer, null);
-                ReplaceComponent(ref preset.warhead, null);
-                ReplaceComponent(ref preset.booster, null);
-                ReplaceComponent(ref preset.avionics, null);
+                ReplaceComponent(ref currentPreset.seeker, null);
+                ReplaceComponent(ref currentPreset.computer, null);
+                ReplaceComponent(ref currentPreset.warhead, null);
+                ReplaceComponent(ref currentPreset.booster, null);
+                ReplaceComponent(ref currentPreset.avionics, null);
 
                 return true;
             }
@@ -60,21 +66,16 @@ namespace Hangar
             switch (component)
             {
                 case SeekerComponent seeker:
-                    ReplaceComponent(ref preset.seeker, seeker);
-                    break;
+                    ReplaceComponent(ref currentPreset.seeker, seeker); break;
                 case ComputerComponent guidanceComputer:
-                    ReplaceComponent(ref preset.computer, guidanceComputer);
-                    break;
+                    ReplaceComponent(ref currentPreset.computer, guidanceComputer); break;
                 // _missile.Computer = guidanceComputer;
                 case WarheadComponent warhead:
-                    ReplaceComponent(ref preset.warhead, warhead);
-                    break;
+                    ReplaceComponent(ref currentPreset.warhead, warhead); break;
                 case BoosterComponent booster:
-                    ReplaceComponent(ref preset.booster, booster);
-                    break;
+                    ReplaceComponent(ref currentPreset.booster, booster); break;
                 case AvionicsComponent avionics:
-                    ReplaceComponent(ref preset.avionics, avionics);
-                    break;
+                    ReplaceComponent(ref currentPreset.avionics, avionics); break;
             }
 
 
@@ -103,12 +104,12 @@ namespace Hangar
         {
             int nextItemPosition = 0;
 
-            nextItemPosition = SetPosition(preset.seeker, nextItemPosition);
-            nextItemPosition = SetPosition(preset.warhead, nextItemPosition);
-            nextItemPosition = SetPosition(preset.computer, nextItemPosition);
-            nextItemPosition = SetPosition(preset.avionics, nextItemPosition);
+            nextItemPosition = SetPosition(currentPreset.seeker, nextItemPosition);
+            nextItemPosition = SetPosition(currentPreset.warhead, nextItemPosition);
+            nextItemPosition = SetPosition(currentPreset.computer, nextItemPosition);
+            nextItemPosition = SetPosition(currentPreset.avionics, nextItemPosition);
 
-            SetPosition(preset.booster, nextItemPosition);
+            SetPosition(currentPreset.booster, nextItemPosition);
 
         }
 
@@ -117,8 +118,8 @@ namespace Hangar
             if (component is null)
                 return nextItemPosition + 1;
 
-            component.SpawnedObject.transform.position = preset.body.SpawnedObject.transform.position -
-                                                         preset.body.SpawnedObject.transform.forward *
+            component.SpawnedObject.transform.position = currentPreset.body.SpawnedObject.transform.position -
+                                                         currentPreset.body.SpawnedObject.transform.forward *
                                                          nextItemPosition /* with a transformation */;
             
             return nextItemPosition + component.size;
@@ -129,11 +130,12 @@ namespace Hangar
             if (true/*preset.IsValid*/)
             {
                 Debug.Log("saving preset with name " + textEntryField.text);
+                Debug.Log($"with components: {currentPreset.avionics.name}, {currentPreset.body.name}, {currentPreset.computer.name}, {currentPreset.booster.name}, {currentPreset.warhead.name}, {currentPreset.seeker.name}");
                 
-                if (SavedPresets.TryAdd(textEntryField.text, preset))
+                if (SavedPresets.TryAdd(textEntryField.text, currentPreset))
                     Instantiate(presetButtonPrefab, _presetMenuContent).SetText(textEntryField.text);
-                else
-                    SavedPresets[textEntryField.text] = preset;
+                else // add overwrite dialogue box or something
+                    SavedPresets[textEntryField.text] = currentPreset;
                 
                 // textEntryField.text = "";
             }
@@ -147,14 +149,19 @@ namespace Hangar
 
         public void Load(string presetName)
         {
-            preset = SavedPresets[presetName];
+            MissilePreset newPreset = SavedPresets[presetName];
+            
+            Debug.Log("loading preset with name " + presetName);
+            Debug.Log($"with components: {newPreset.avionics.name}, {newPreset.body.name}, {newPreset.computer.name}, {newPreset.booster.name}, {newPreset.warhead.name}, {newPreset.seeker.name}");
+            
             // ass code right here
-            AddMissileComponent(preset.body);
-            AddMissileComponent(preset.seeker);
-            AddMissileComponent(preset.computer);
-            AddMissileComponent(preset.warhead);
-            AddMissileComponent(preset.booster);
-            AddMissileComponent(preset.avionics);
+            // with hindsight the previous statement holds true
+            AddMissileComponent(newPreset.body);
+            AddMissileComponent(newPreset.seeker);
+            AddMissileComponent(newPreset.computer);
+            AddMissileComponent(newPreset.warhead);
+            AddMissileComponent(newPreset.booster);
+            AddMissileComponent(newPreset.avionics);
         } 
 
         public override void OnInteract()
@@ -184,6 +191,11 @@ namespace Hangar
             presetsMenu.SetActive(false);
             componentsInventoryMenu.SetActive(false);
             Inventory.Instance.HideComponentInventory();
+        }
+
+        private void OnDestroy()
+        {
+            PersistentDataHandler.SaveObject("MissilePresets", SavedPresets);
         }
     }
 }

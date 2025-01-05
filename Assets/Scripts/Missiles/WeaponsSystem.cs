@@ -1,37 +1,28 @@
-﻿using System;
-using System.Collections.Generic;
-using Missiles.Components;
+﻿using System.Collections.Generic;
+using Targeting;
 using UnityEngine;
-using Utility;
 
 namespace Missiles
 {
     public class WeaponsSystem : MonoBehaviour
     {
         [SerializeField] private Missile defaultMissilePrefab;
-        [SerializeField] private Missile[] serializedMissiles;
+        [SerializeField] private Transform[] attachmentPoints;
+        // TODO: add back serialize missile presets for npc aircraft
+        
+        [SerializeField] private CountermeasureDispenser[] countermeasureDispensers;
         
         public readonly Queue<Missile> Missiles = new();
 
-        private Rigidbody _rigidbody;
-
-        private void Start()
-        {
-            foreach (var m in serializedMissiles)
-            {
-                Missiles.Enqueue(m);
-            }
-
-            _rigidbody = GetComponent<Rigidbody>();
-        }
-
-
+        [SerializeField] private Rigidbody rb;
+        
+        
         public void FireNext()
         {
             Missiles.Dequeue().Fire();
         }
 
-        public void AddMissile(Vector3 position, Quaternion rotation, MissilePreset preset)
+        private void AddMissile(Vector3 position, Quaternion rotation, MissilePreset preset)
         {
             Missile missile = Instantiate(defaultMissilePrefab, position, rotation, transform);
             Instantiate(preset.body.prefab, position, rotation, missile.transform);
@@ -42,10 +33,23 @@ namespace Missiles
             missile.warhead = preset.warhead;
             missile.booster = preset.booster;
             missile.avionics = preset.avionics;
-
-            missile.parentRigidbody = _rigidbody;
-            missile.Select();
+            
+            missile.parentRigidbody = rb;
+            // missile.Select();
             Missiles.Enqueue(missile);
+        }
+
+        public void SetMissile(MissilePreset preset, int index)
+        {
+            Transform t = attachmentPoints[index];
+            Debug.Log($"adding to index {index} : {t.gameObject.name}");
+            AddMissile(t.position, t.rotation, preset);
+        }
+
+        public void DeployFlares()
+        {
+            foreach (CountermeasureDispenser d in countermeasureDispensers)
+                d.DeployFlare();
         }
 
     }

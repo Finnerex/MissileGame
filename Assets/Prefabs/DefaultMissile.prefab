@@ -4930,7 +4930,6 @@ GameObject:
   - component: {fileID: 2776028968856801042}
   - component: {fileID: 4904873054263126436}
   - component: {fileID: 6256534554851997456}
-  - component: {fileID: 4238420164880304728}
   m_Layer: 0
   m_Name: DefaultMissile
   m_TagString: Untagged
@@ -4968,14 +4967,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1c403485510c4d44b59d2dbe1829634f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  seeker: {fileID: 11400000, guid: 5afead34a1043ed4094ce55fde8d48f6, type: 2}
+  seeker: {fileID: 11400000, guid: ac99b247a88d23b448471085f646f95c, type: 2}
   computer: {fileID: 11400000, guid: 5ea0d6f8c8eb1284f91ad87824aa9d7e, type: 2}
   warhead: {fileID: 11400000, guid: 0a4e78334a2eba646b6669208a402576, type: 2}
   booster: {fileID: 11400000, guid: 098d702180a0627499d2751426114e64, type: 2}
   avionics: {fileID: 11400000, guid: ceb217c386bbb1340b43fcc4fa476f4d, type: 2}
   parentRigidbody: {fileID: 0}
-  aeroBody: {fileID: 4904873054263126436}
   seekerHead: {fileID: 5115794138227975255}
+  aeroBody: {fileID: 4904873054263126436}
   armTimeSeconds: 0.4
   particleSystems:
   - {fileID: 830986288492703557}
@@ -5066,21 +5065,6 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 2, y: 2, z: 26.109457}
   m_Center: {x: 0, y: 0, z: -0.1749754}
---- !u!114 &4238420164880304728
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2581888372781448470}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3662fbb8bc8a4eaeafb1a764bcfce977, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  icon: {fileID: 0}
-  cam: {fileID: 0}
-  distance: 500
 --- !u!1 &2623396810920008629
 GameObject:
   m_ObjectHideFlags: 0
@@ -10201,7 +10185,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 5115794138227975255}
-  - component: {fileID: 850353239305268269}
   m_Layer: 0
   m_Name: SeekerHead
   m_TagString: Untagged
@@ -10224,21 +10207,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 8962516715756915980}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &850353239305268269
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5830831962662427290}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3662fbb8bc8a4eaeafb1a764bcfce977, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  icon: {fileID: 0}
-  cam: {fileID: 0}
-  distance: 500
 --- !u!1 &7483361106203108987
 GameObject:
   m_ObjectHideFlags: 0

@@ -1,12 +1,12 @@
 ﻿using UnityEngine;
 
-namespace Utility
+namespace Player
 {
     public class ForwardUiIcon : MonoBehaviour
     {
         public RectTransform icon;
         [SerializeField] private Camera cam;
-        public float distance = 150;
+        public float distance = 500;
 
         private Transform _transform;
 
@@ -25,7 +25,7 @@ namespace Utility
         private void Update()
         {
             Vector3 screenPoint = cam.WorldToScreenPoint(_transform.position + _transform.forward * distance);
-            
+
             if (screenPoint.z >= 0) 
                 icon.position = screenPoint;
 

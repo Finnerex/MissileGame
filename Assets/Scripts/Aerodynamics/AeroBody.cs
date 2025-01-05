@@ -99,5 +99,26 @@ namespace Aerodynamics
             }
         }
 
+        private void OnDrawGizmosSelected()
+        {
+            Gizmos.color = new Color(0, 1, 1, 1);
+            Gizmos.DrawSphere(transform.position + CalculateColOffset(), 0.4f);
+            Gizmos.color = new Color(1, 0.92f, 0.016f, 1);
+            Gizmos.DrawSphere(rb.worldCenterOfMass, 0.4f);
+        }
+
+        private Vector3 CalculateColOffset()
+        {
+            Vector3 distanceWeightedAreaSum = Vector3.zero;
+            float areaSum = 0;
+            
+            foreach (AeroSurface surface in aeroSurfaces)
+            {
+                areaSum += surface.Area;
+                distanceWeightedAreaSum += surface.Area * (surface.transform.position - transform.position); // maybe should be from com but might not matter
+            }
+
+            return distanceWeightedAreaSum / areaSum;
+        }
     }
 }

@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5a4785416f32407fae90118caf27295a, type: 3}
   m_Name: IrSeeker
   m_EditorClassIdentifier: 
-  prefab: {fileID: 0}
+  prefab: {fileID: 2974828793398642274, guid: 1b9cc63f8e3a80b4e8ae5c06a038fa0a, type: 3}
   size: 2
   scaleFactor: 0
   isCaged: 0

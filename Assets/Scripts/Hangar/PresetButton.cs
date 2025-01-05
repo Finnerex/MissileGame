@@ -11,6 +11,10 @@ namespace Hangar
         public void Load()
         {
             MissileWorkbench.Instance.Load(text.text);
+            
+            // likely should differentiate between the 2 uis this is used in
+
+            HangarController.Instance.CurrentlySelectedPreset = MissileWorkbench.Instance.SavedPresets[text.text];
         }
 
         public void SetText(string newText)

@@ -10,6 +10,9 @@ namespace Aerodynamics
 
         private Transform _transform;
 
+        public float aoa { get; private set; }
+        public float Area => area;
+        
         private void Start()
         {
             _transform = transform;
@@ -26,6 +29,8 @@ namespace Aerodynamics
                 AoA = 180 - AoA;
             else if (AoA < -90)
                 AoA = -180 - AoA;
+
+            aoa = AoA;
             
             float dynamicPressure = 0.5f * airDensity * velocity.sqrMagnitude;
             float forceMagnitude = dynamicPressure * area * Mathf.PI * (AoA * Mathf.Deg2Rad);

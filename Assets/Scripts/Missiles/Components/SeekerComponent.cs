@@ -27,10 +27,8 @@ namespace Missiles.Components
             for (int i = 0; i < size; i++)
             {
                 float angleToTarget = Vector3.Angle(direction, result[i].transform.position - origin);
-                
-                // Debug.Log($"angle to target {i}: {angleToTarget}");
 
-                if (angleToTarget <= halfAngle && !Physics.Linecast(origin, result[i].transform.position, ~layerMask))
+                if (angleToTarget <= halfAngle && Physics.Linecast(origin, result[i].transform.position, layerMask))
                 {
                     result[outSize] = result[i];
                     outSize++;

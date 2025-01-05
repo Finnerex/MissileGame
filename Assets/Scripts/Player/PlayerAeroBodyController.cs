@@ -47,6 +47,7 @@ namespace Player
 
         private void Update()
         {
+
             Vector3 mouseControl = Vector3.zero;
             
             if (!Input.GetKey(KeyCode.C))

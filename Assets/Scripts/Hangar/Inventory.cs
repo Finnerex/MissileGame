@@ -26,6 +26,9 @@ namespace Hangar
         
         public override void OnInteract()
         {
+            // if (Selected)
+            //     return;
+            
             base.OnInteract();
             // componentInventory.SetActive(true);
 
@@ -55,12 +58,8 @@ namespace Hangar
 
         public void HideComponentInventory()
         {
-            foreach (var item in _componentInventoryContent)
-            {
-                Debug.Log("should remove object of type" + item.GetType());
-                if (item is Component child)
-                    Destroy(child.gameObject);
-            }
+            foreach (RectTransform child in _componentInventoryContent)
+                Destroy(child.gameObject);
         }
 
     }

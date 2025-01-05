@@ -45,5 +45,11 @@ namespace Targeting
             }
             
         }
+
+
+        private void Update()
+        {
+            SpottedObjects.RemoveWhere(item => item == null); // me no like expensive
+        }
     }
 }

@@ -9,11 +9,18 @@ public class OrbitCamera : MonoBehaviour
     [SerializeField] private float scrollSensitivity = 8;
     [SerializeField] private float minDistance = 10;
     [SerializeField] private float maxDistance = 50;
+    [SerializeField] private float zoomFOV = 30;
+    [SerializeField] private float zoomTimeSeconds = 0.5f;
 
     public float sensitivity = 2;
 
     private Transform _transform;
     private Vector3 _offset;
+    private Transform _centerTransform;
+
+    private Camera _camera;
+    private float _defaultFOV;
+    private float _currentZoomTimeSeconds;
 
     private void Start()
     {
@@ -23,27 +30,38 @@ public class OrbitCamera : MonoBehaviour
         Cursor.lockState = CursorLockMode.Locked;
 
         _offset = _transform.position - center.transform.position;
+        
+        _centerTransform = center.transform;
+
+        _camera = GetComponent<Camera>(); // omg slow get component i could never
+        _defaultFOV = _camera.fieldOfView;
     }
 
     private void LateUpdate()
     {
-        Transform centerTransform = center.transform;
         
-        // Rotate the camera around the center object based on mouse input
         Quaternion rotationX = Quaternion.AngleAxis(-Input.GetAxis("Mouse Y") * sensitivity, _transform.right);
-        Quaternion rotationY = Quaternion.AngleAxis(Input.GetAxis("Mouse X") * sensitivity, centerTransform.up);
+        Quaternion rotationY = Quaternion.AngleAxis(Input.GetAxis("Mouse X") * sensitivity, _centerTransform.up);
 
-        // Apply rotations to the offset vector
+        // yeah there was some strange bits with the camera not quite following the object
         _offset = rotationY * rotationX * _offset;
-
-        // Calculate the new distance after zooming in/out
         _offset = _offset.normalized * Mathf.Clamp(_offset.magnitude - Input.mouseScrollDelta.y * scrollSensitivity, minDistance, maxDistance);
-
-        // Recalculate the camera position based on the center object's new position
-        _transform.position = centerTransform.position + _offset;
-
-        // Calculate the direction from the camera to the center object and set the rotation manually
-        _transform.rotation = Quaternion.LookRotation(centerTransform.position - _transform.position);
+        _transform.position = _centerTransform.position + _offset;
+        _transform.rotation = Quaternion.LookRotation(_centerTransform.position - _transform.position);
+        
+        // zoom (stolen from FOLC!!)
+        if (Input.GetMouseButton(1) && _currentZoomTimeSeconds < zoomTimeSeconds)
+        {
+            _currentZoomTimeSeconds += Time.deltaTime;
+            _camera.fieldOfView = Mathf.Lerp(_defaultFOV, zoomFOV, _currentZoomTimeSeconds / zoomTimeSeconds);
+        }
+        else if (!Input.GetMouseButton(1) && _currentZoomTimeSeconds > 0)
+        {
+            _currentZoomTimeSeconds -= Time.deltaTime;
+            // me when i repeat myself
+            _camera.fieldOfView = Mathf.Lerp(_defaultFOV, zoomFOV, _currentZoomTimeSeconds / zoomTimeSeconds);
+        }
+        
     }
 }
 }

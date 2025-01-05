@@ -3,6 +3,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using Aerodynamics;
 using Missiles.Components;
+using Player;
 using UnityEngine;
 using Utility;
 
@@ -11,7 +12,7 @@ namespace Missiles
     public class Missile : MonoBehaviour
     {
         // this is kinda unsafe but should work as long as i dont fuck it up
-        public static readonly Vector3 InvalidTarget = new (float.MinValue, float.MinValue, float.MinValue);
+        private static readonly Vector3 InvalidTarget = new (float.MinValue, float.MinValue, float.MinValue);
         
         public SeekerComponent seeker;
         public ComputerComponent computer;
@@ -20,9 +21,11 @@ namespace Missiles
         public AvionicsComponent avionics;
 
         public Rigidbody parentRigidbody;
-
+        public Transform seekerHead;
+        
+        public bool HasLock { get; private set; }
+        
         [SerializeField] private AeroBody aeroBody;
-        [SerializeField] private Transform seekerHead;
         [SerializeField] private float armTimeSeconds;
         [SerializeField] private ParticleSystem[] particleSystems;
 
@@ -33,8 +36,6 @@ namespace Missiles
         private float _lastLos;
         private float _lastLosRate;
 
-        private ForwardUiIcon _seekerIcon;
-        
         private const float InverseGrav = 1 / 9.8f;
         private bool _fired;
         private bool _selected;
@@ -45,16 +46,9 @@ namespace Missiles
         private void Awake()
         {
             _transform = transform;
-            _seekerIcon = seekerHead.GetComponent<ForwardUiIcon>();
-
+            
             aeroBody.rb.isKinematic = true;
             aeroBody.rb.detectCollisions = false;
-        }
-
-        private void Start()
-        {
-            _seekerIcon.icon = UIController.Instance.MissileLockRect;
-            GetComponent<ForwardUiIcon>().icon = UIController.Instance.missileGimbalCircle;
         }
 
         public void Fire()
@@ -76,50 +70,26 @@ namespace Missiles
             _armed = true;
             aeroBody.rb.detectCollisions = true;
         }
-
-        // TODO: pull out ui stuff to somewhere else because this is going to be used in a place that isn't just for player
+        
         public void Select()
         {
             _selected = true;
-            
-            float circleDiameter = 2 * Mathf.Tan(seeker.fieldOfView * 0.5f * Mathf.Deg2Rad) * 500;
-            UIController.Instance.MissileLockRect.sizeDelta = new Vector2(circleDiameter, circleDiameter);
-
-            if (seeker.isCaged)
-                UIController.Instance.missileGimbalCircle.gameObject.SetActive(false);
-            else
-            {
-                UIController.Instance.missileGimbalCircle.gameObject.SetActive(true);
-                circleDiameter = 2 * Mathf.Tan((seeker.maxGimbalAngle + seeker.fieldOfView) * 0.5f * Mathf.Deg2Rad) * 500;
-                UIController.Instance.missileGimbalCircle.sizeDelta = new Vector2(circleDiameter, circleDiameter);
-            }
-            
         }
 
         private void FixedUpdate()
         {
             
             if (!_selected && !_fired) return;
+
             
             if (_targetTransform != null)
                 seeker.LookAt(seekerHead, _targetTransform.position, _transform.forward, _fired);
+            else if (_selected)
+                seekerHead.localRotation = Quaternion.identity;
             
             _targetTransform = seeker.GetTargetPosition(seekerHead);
 
-            // TODO: add back the selected check
-            if (/*_selected && */_targetTransform is not null)
-            {
-                UIController.Instance.missileLockCircle.color = new Color(0.8f, 0.28f, 0.2f);
-                // UpdateCircles((_transform.position - _targetTransform.position).magnitude);
-                // seeker.LookAt(seekerHead, _targetTransform.position, _transform.forward, _fired);
-            }
-            else/* if (_selected)*/
-            {
-                UIController.Instance.missileLockCircle.color = new Color(0.75f, 0.75f, 0.7f);
-                // UpdateCircles(seeker.lockRange);
-                if (_selected)
-                    seekerHead.localRotation = Quaternion.identity;
-            }
+            HasLock = _targetTransform != null;
             
             if (!_fired) return;
             // only do the following if the missile has been fired
@@ -143,7 +113,7 @@ namespace Missiles
                 Destroy(gameObject);
             
 
-            if (_targetTransform is not null)
+            if (HasLock)
             {
                 Vector3 targetVelocity = (_targetTransform.position - _lastTargetPosition) * Util.InverseFDeltaTime;
                 Vector3 direction = computer.GetDesiredDirection(_transform.position, aeroBody.rb.velocity,
@@ -167,12 +137,10 @@ namespace Missiles
             float yaw = Util.AngleAroundAxis(forward, _transform.forward, _transform.up);
 
             // control should be zero at max overload and 1 at 0
-            // this is not really a good way of doing this
+            // this is not really a good way of doing this because its artificially limiting
             Vector3 acceleration = (aeroBody.rb.velocity - _lastVelocity) * Util.InverseFDeltaTime;
             float geeForce = Vector3.ProjectOnPlane(acceleration, _transform.forward).magnitude * InverseGrav;
             float controlCoefficient = -0.04f * Mathf.Clamp((avionics.maxOverloadGees - geeForce) / avionics.maxOverloadGees, 0, 1);
-            
-            // Debug.Log($"Gees: {geeForce}, max: {avionics.maxOverloadGees}, control vector: {pitch}, {yaw}");
 
             return new Vector3(pitch * controlCoefficient, yaw * controlCoefficient, 0);
         }

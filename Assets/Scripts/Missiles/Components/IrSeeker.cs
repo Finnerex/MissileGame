@@ -18,13 +18,14 @@ namespace Missiles.Components
             
             int numberOfObjects = OverlapConeNonAlloc(position, thisTransform.forward, HitObjects, fieldOfView * 0.5f, lockRange,
                 LayerMask.GetMask("Target"));
+            // TODO: I think i need a better solution for finding what to target because omniscient can target flares or whatever
 
             return FilterTarget(HitObjects, numberOfObjects, position);
         }
 
         private Transform FilterTarget(Collider[] targets, int numTargets, Vector3 position)
         {
-            TemperatureVolume highestTemp = null;
+            TemperatureVolume highestTempVolume = null;
             float highestPerceivedTemp = 0;
             
             for (int i = 0; i < numTargets; i++)
@@ -33,17 +34,16 @@ namespace Missiles.Components
                     continue;
 
                 float perceivedTemp = volume.temperature / (position - volume.transform.position).sqrMagnitude;
-
-                // TODO: make perceived temperature diminish with distance
-                if ((highestTemp is null || perceivedTemp > highestPerceivedTemp) && perceivedTemp > minTemperature)
+                
+                if ((highestTempVolume is null || perceivedTemp > highestPerceivedTemp) && perceivedTemp > minTemperature)
                 {
-                    highestTemp = volume;
+                    highestTempVolume = volume;
                     highestPerceivedTemp = perceivedTemp;
                     // Debug.Log("highest temp is now: " + volume.temperature);
                 }
             }
 
-            return highestTemp?.transform;
+            return highestTempVolume?.transform;
         }
         
     }

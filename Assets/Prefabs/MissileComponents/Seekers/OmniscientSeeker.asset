@@ -14,7 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   prefab: {fileID: 2974828793398642274, guid: 1b9cc63f8e3a80b4e8ae5c06a038fa0a, type: 3}
   size: 3
+  scaleFactor: 0
   isCaged: 0
-  fieldOfView: 5
-  maxGimbalAngle: 30
+  fieldOfView: 3
+  maxGimbalAngle: 3
   lockRange: 15000

@@ -8,8 +8,14 @@ namespace Hangar
         [SerializeField] private GameObject ui;
         [SerializeField] private GameObject cameraPoint;
 
+        // protected bool Selected;
+
         public virtual void OnInteract()
         {
+            // if (Selected)
+            //     return;
+            // Selected = true;
+            
             ui.SetActive(true);
             Cursor.visible = true;
             Cursor.lockState = CursorLockMode.Confined;
@@ -19,7 +25,7 @@ namespace Hangar
             HangarController.Instance.orbitCamera.transform.rotation = cameraPoint.transform.rotation;
             // HangarController.Instance.orbitCamera.transform.LookAt(transform.position);
             HangarController.Instance.orbitCamera.enabled = false;
-
+            
         }
 
         private void Update()
@@ -38,6 +44,8 @@ namespace Hangar
             Cursor.lockState = CursorLockMode.Locked;
             // HangarController.Instance.orbitCamera.center = HangarController.Instance.defaultOrbitPoint;
             HangarController.Instance.orbitCamera.enabled = true;
+
+            // Selected = false;
         }
         
     }
