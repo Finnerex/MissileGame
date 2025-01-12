@@ -23,8 +23,9 @@ namespace Missiles
         public Rigidbody parentRigidbody;
         public Transform seekerHead;
         
-        public bool HasLock { get; private set; }
-        
+        public bool hasLock { get; private set; }
+        public bool selected;
+
         [SerializeField] private AeroBody aeroBody;
         [SerializeField] private float armTimeSeconds;
         [SerializeField] private ParticleSystem[] particleSystems;
@@ -33,12 +34,9 @@ namespace Missiles
         private Transform _transform;
         private Vector3 _lastTargetPosition = InvalidTarget;
         private Vector3 _lastVelocity;
-        private float _lastLos;
-        private float _lastLosRate;
 
         private const float InverseGrav = 1 / 9.8f;
         private bool _fired;
-        private bool _selected;
         private float _currentArmTime;
         private float _currentBurnTime;
         private bool _armed;
@@ -51,10 +49,15 @@ namespace Missiles
             aeroBody.rb.detectCollisions = false;
         }
 
+        public void Unlock()
+        {
+            _targetTransform = null;
+        }
+
         public void Fire()
         {
             _fired = true;
-            _selected = false;
+            selected = false;
             transform.SetParent(null);
             aeroBody.enabled = true;
             aeroBody.rb.isKinematic = false;
@@ -70,26 +73,21 @@ namespace Missiles
             _armed = true;
             aeroBody.rb.detectCollisions = true;
         }
-        
-        public void Select()
-        {
-            _selected = true;
-        }
 
         private void FixedUpdate()
         {
             
-            if (!_selected && !_fired) return;
-
+            if (!selected && !_fired) return;
+            
             
             if (_targetTransform != null)
                 seeker.LookAt(seekerHead, _targetTransform.position, _transform.forward, _fired);
-            else if (_selected)
+            else if (selected)
                 seekerHead.localRotation = Quaternion.identity;
             
             _targetTransform = seeker.GetTargetPosition(seekerHead);
 
-            HasLock = _targetTransform != null;
+            hasLock = _targetTransform != null;
             
             if (!_fired) return;
             // only do the following if the missile has been fired
@@ -113,7 +111,7 @@ namespace Missiles
                 Destroy(gameObject);
             
 
-            if (HasLock)
+            if (hasLock)
             {
                 Vector3 targetVelocity = (_targetTransform.position - _lastTargetPosition) * Util.InverseFDeltaTime;
                 Vector3 direction = computer.GetDesiredDirection(_transform.position, aeroBody.rb.velocity,

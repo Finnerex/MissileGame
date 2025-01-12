@@ -1,7 +1,6 @@
-﻿using System;
-using UnityEngine;
+﻿using UnityEngine;
 
-namespace Utility
+namespace Targeting
 {
     public class CollisionDamageable : MonoBehaviour
     {

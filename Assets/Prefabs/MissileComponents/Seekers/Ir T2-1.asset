@@ -9,11 +9,13 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d2e4967f29e042dfb628bbecb807583c, type: 3}
-  m_Name: Booster 1
+  m_Script: {fileID: 11500000, guid: 5a4785416f32407fae90118caf27295a, type: 3}
+  m_Name: Ir T2-1
   m_EditorClassIdentifier: 
-  prefab: {fileID: 0}
-  size: 345098
-  scaleFactor: 1
-  burnTimeSeconds: 1
-  thrustMultiplier: 99
+  displayName: 
+  size: 2
+  isCaged: 0
+  fieldOfView: 5
+  maxGimbalAngle: 15
+  lockRange: 8000
+  minTemperature: 0

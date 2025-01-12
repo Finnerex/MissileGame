@@ -18,5 +18,10 @@ namespace Missiles.Components
 
             return true;
         }
+
+        public override string ToString()
+        {
+            return $"{base.ToString()}\nBurn Time: {burnTimeSeconds}s\nThrust: {thrustMultiplier}";
+        }
     }
 }

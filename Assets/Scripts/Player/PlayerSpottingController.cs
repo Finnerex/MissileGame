@@ -1,7 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Targeting;
-using Unity.VisualScripting;
 using UnityEngine;
 using Utility;
 
@@ -28,37 +26,33 @@ namespace Player
 
         private void Update()
         {
-
             if (_currentSpotTime >= spottingPeriodSeconds)
             {
                 spottingSystem.TrySpot();
                 _currentSpotTime = 0;
-                
-                int difference = spottingSystem.SpottedObjects.Count - _uiIcons.Count;
-                
-                Debug.Log($"Difference: {difference}, system count: {spottingSystem.SpottedObjects.Count}, ui count: {_uiIcons.Count}");
-                
-                for (int i = 0; i < Mathf.Abs(difference); i++)
-                {
-                    if (difference < 0)
-                    {
-                        Destroy(_uiIcons[i].gameObject);
-                        _uiIcons.RemoveAt(i);
-                    }
-                    else
-                        _uiIcons.Add(Instantiate(enemyIcon, UIController.Instance.transform));
-                
-                }
-                
             }
 
             _currentSpotTime += Time.deltaTime;
             
+            // i dont really know if i want to do this every frame
+            int difference = spottingSystem.SpottedObjects.Count - _uiIcons.Count;
+                
+            // Debug.Log($"Difference: {difference}, system count: {spottingSystem.SpottedObjects.Count}, ui count: {_uiIcons.Count}");
+                
+            for (int i = 0; i < Mathf.Abs(difference); i++)
+            {
+                if (difference < 0)
+                {
+                    Destroy(_uiIcons[i].gameObject);
+                    _uiIcons.RemoveAt(i);
+                }
+                else
+                    _uiIcons.Add(Instantiate(enemyIcon, UIController.Instance.transform));
+            }
             
             int j = 0;
             foreach (GameObject spotted in spottingSystem.SpottedObjects)
             {
-
                 if (spotted == null)
                 {
                     j++;

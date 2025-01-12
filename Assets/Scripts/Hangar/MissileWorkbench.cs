@@ -1,30 +1,32 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using Missiles;
 using Missiles.Components;
 using TMPro;
-using Unity.VisualScripting;
 using UnityEngine;
 using Utility;
 
 
 namespace Hangar
 {
-    public class MissileWorkbench : HangarInteractable
+    public class MissileWorkbench : HangarInteractable // kinda doesnt need to extend this any more
     {
         public MissilePreset currentPreset;
         [NonSerialized] public SerializableDictionary<string, MissilePreset> SavedPresets;
 
         [SerializeField] private Transform missileParent;
         [SerializeField] private TMP_InputField textEntryField;
-        [SerializeField] private GameObject presetsMenu;
-        [SerializeField] private PresetButton presetButtonPrefab;
-        [SerializeField] private GameObject componentsInventoryMenu;
+        [SerializeField] private TextMeshProUGUI statsText;
         
-        private int _remainingCapacity;
-        private Transform _presetMenuContent;
+        [SerializeField] private Transform presetMenuContent;
+        [SerializeField] private PresetButton presetButtonPrefab;
 
+        private int _remainingCapacity;
+        
+
+        // a solution that work however unproud of it i am
+        private GameObject _spawnedBody;
+        private GameObject _spawnedFins;
+        
         // public TechTreeNode currentResearchNode;
 
         public static MissileWorkbench Instance;
@@ -32,36 +34,42 @@ namespace Hangar
         private void Awake()
         {
             Instance = this;
-            _presetMenuContent = presetsMenu.transform.Find("Viewport/Content");
+        }
+
+        private void Start()
+        {
             SavedPresets = PersistentDataHandler.LoadObjectOrNew<SerializableDictionary<string, MissilePreset>>("MissilePresets");
+            
+            // add buttons to the menu
+            foreach (var entry in SavedPresets)
+                Instantiate(presetButtonPrefab, presetMenuContent).SetText(entry.Key);
         }
 
         public bool AddMissileComponent(MissileComponent component)
         {
 
-            Debug.Log("adding the jawn called: " + component.name);
-            
             if (component is BodyComponent body)
             {
-                Debug.Log("buddy is a body");
-                ReplaceComponent(ref currentPreset.body, body);
-                
+                Destroy(_spawnedBody);
+                Destroy(_spawnedFins);
+                _spawnedBody = Instantiate(body.prefab, missileParent);
+                currentPreset.body = body;
+
                 _remainingCapacity = body.size;
 
                 // still a little ugly
-                ReplaceComponent(ref currentPreset.seeker, null);
-                ReplaceComponent(ref currentPreset.computer, null);
-                ReplaceComponent(ref currentPreset.warhead, null);
-                ReplaceComponent(ref currentPreset.booster, null);
-                ReplaceComponent(ref currentPreset.avionics, null);
+                currentPreset.seeker = null;
+                currentPreset.computer = null;
+                currentPreset.warhead = null;
+                currentPreset.booster = null;
+                currentPreset.avionics = null;
 
+                SetStatsText();
                 return true;
             }
 
-            if (component.size > _remainingCapacity)
+            if (currentPreset.body is null)
                 return false; // cannot be added
-
-            _remainingCapacity -= component.size;
 
             switch (component)
             {
@@ -69,90 +77,52 @@ namespace Hangar
                     ReplaceComponent(ref currentPreset.seeker, seeker); break;
                 case ComputerComponent guidanceComputer:
                     ReplaceComponent(ref currentPreset.computer, guidanceComputer); break;
-                // _missile.Computer = guidanceComputer;
                 case WarheadComponent warhead:
                     ReplaceComponent(ref currentPreset.warhead, warhead); break;
                 case BoosterComponent booster:
                     ReplaceComponent(ref currentPreset.booster, booster); break;
                 case AvionicsComponent avionics:
-                    ReplaceComponent(ref currentPreset.avionics, avionics); break;
+                    ReplaceComponent(ref currentPreset.avionics, avionics);
+                    Destroy(_spawnedFins);
+                    _spawnedFins = Instantiate(avionics.prefab, _spawnedBody.transform.position, _spawnedBody.transform.rotation, missileParent);
+                    break;
             }
-
-
-            ResetPositions();
-            return true;
-        }
-
-        // this is cool asf b/c you normally cant do ref polymorphism
-        private void ReplaceComponent<T>(ref T oldComponent, T newComponent) 
-        where T : MissileComponent
-        {
-            if (oldComponent is not null)
-                Destroy(oldComponent.SpawnedObject); // despawn the old object
-
-            if (newComponent is not null)
-            {
-                // not simply deleted
-                newComponent.SpawnedObject = Instantiate(newComponent.prefab, missileParent); // spawn the new one, will be moved
-                newComponent.SpawnedObject.transform.localScale = Vector3.one * newComponent.scaleFactor;
-            }
-
-            oldComponent = newComponent;
-        }
-
-        private void ResetPositions()
-        {
-            int nextItemPosition = 0;
-
-            nextItemPosition = SetPosition(currentPreset.seeker, nextItemPosition);
-            nextItemPosition = SetPosition(currentPreset.warhead, nextItemPosition);
-            nextItemPosition = SetPosition(currentPreset.computer, nextItemPosition);
-            nextItemPosition = SetPosition(currentPreset.avionics, nextItemPosition);
-
-            SetPosition(currentPreset.booster, nextItemPosition);
-
-        }
-
-        private int SetPosition(MissileComponent component, int nextItemPosition)
-        {
-            if (component is null)
-                return nextItemPosition + 1;
-
-            component.SpawnedObject.transform.position = currentPreset.body.SpawnedObject.transform.position -
-                                                         currentPreset.body.SpawnedObject.transform.forward *
-                                                         nextItemPosition /* with a transformation */;
             
-            return nextItemPosition + component.size;
+            SetStatsText();
+            
+            return true; // could still actually be false at this point because i didnt do the size check
+        }
+
+        private void ReplaceComponent<T>(ref T oldComponent, T newComponent) where T : MissileComponent
+        {
+            // wt frick
+            if (!((oldComponent != null && newComponent.size <= _remainingCapacity + oldComponent.size) || newComponent.size <= _remainingCapacity))
+                return;
+
+            if (oldComponent != null)
+                _remainingCapacity += oldComponent.size;
+            
+            _remainingCapacity -= newComponent.size;
+            
+            oldComponent = newComponent;
         }
         
         public void Save()
         {
-            if (true/*preset.IsValid*/)
-            {
-                Debug.Log("saving preset with name " + textEntryField.text);
-                Debug.Log($"with components: {currentPreset.avionics.name}, {currentPreset.body.name}, {currentPreset.computer.name}, {currentPreset.booster.name}, {currentPreset.warhead.name}, {currentPreset.seeker.name}");
-                
-                if (SavedPresets.TryAdd(textEntryField.text, currentPreset))
-                    Instantiate(presetButtonPrefab, _presetMenuContent).SetText(textEntryField.text);
-                else // add overwrite dialogue box or something
-                    SavedPresets[textEntryField.text] = currentPreset;
-                
-                // textEntryField.text = "";
-            }
-
-            foreach (var entry in SavedPresets)
-            {
-                Debug.Log(entry.Key);
-            }
+            if (!currentPreset.IsValid) return;
             
+            if (SavedPresets.TryAdd(textEntryField.text, currentPreset))
+                Instantiate(presetButtonPrefab, presetMenuContent).SetText(textEntryField.text);
+            else // add overwrite dialogue box or something
+                SavedPresets[textEntryField.text] = currentPreset;
+                
+            // textEntryField.text = "";
+
         }
 
         public void Load(string presetName)
         {
             MissilePreset newPreset = SavedPresets[presetName];
-            
-            Debug.Log("loading preset with name " + presetName);
-            Debug.Log($"with components: {newPreset.avionics.name}, {newPreset.body.name}, {newPreset.computer.name}, {newPreset.booster.name}, {newPreset.warhead.name}, {newPreset.seeker.name}");
             
             // ass code right here
             // with hindsight the previous statement holds true
@@ -162,40 +132,40 @@ namespace Hangar
             AddMissileComponent(newPreset.warhead);
             AddMissileComponent(newPreset.booster);
             AddMissileComponent(newPreset.avionics);
-        } 
-
-        public override void OnInteract()
-        {
-            base.OnInteract();
-            presetsMenu.SetActive(true);
-            componentsInventoryMenu.SetActive(true);
-            Inventory.Instance.ShowComponentInventory();
-
-            foreach (var entry in SavedPresets)
-            {
-                Instantiate(presetButtonPrefab, _presetMenuContent).SetText(entry.Key);
-            }
         }
 
-        protected override void Exit()
+        private void SetStatsText()
         {
-            base.Exit();
+            string message = "";
 
-            foreach (var item in _presetMenuContent)
-            {
-                Debug.Log("should remove object of type" + item.GetType());
-                if (item is Component child)
-                    Destroy(child.gameObject);
-            }
+            // this is pretty objectively bad code, yet another result of my choice to not use an array
+            if (currentPreset.body != null)
+                message += $"Space Available: {_remainingCapacity}u/{currentPreset.body.size}u";
+
+            if (currentPreset.avionics != null)
+                message += "\n\nAvionics\n" + currentPreset.avionics;
             
-            presetsMenu.SetActive(false);
-            componentsInventoryMenu.SetActive(false);
-            Inventory.Instance.HideComponentInventory();
-        }
+            if (currentPreset.seeker != null)
+                message += "\n\nSeeker\n" + currentPreset.seeker;
+            
+            if (currentPreset.computer != null)
+                message += "\n\nComputer\n" + currentPreset.computer;
+            
+            if (currentPreset.warhead != null)
+                message += "\n\nWarhead\n" + currentPreset.warhead;
+            
+            if (currentPreset.booster != null)
+                message += "\n\nBooster\n" + currentPreset.booster;
 
+
+            statsText.text = message;
+        }
+        
+        
         private void OnDestroy()
         {
             PersistentDataHandler.SaveObject("MissilePresets", SavedPresets);
         }
+
     }
 }

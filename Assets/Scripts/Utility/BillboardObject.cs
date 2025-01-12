@@ -1,14 +1,11 @@
-﻿using System;
-using UnityEngine;
+﻿using UnityEngine;
 
-namespace Targeting
+namespace Utility
 {
-    public class Flare : MonoBehaviour
+    public class BillboardObject : MonoBehaviour
     {
-
         private Transform _transform;
         private Camera _mainCamera;
-        public Rigidbody flareRigidbody;
         
         private void Start()
         {

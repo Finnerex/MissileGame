@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 4008567013896344253}
   - component: {fileID: 6079246580905645485}
   - component: {fileID: 7038157161397853716}
+  - component: {fileID: 197139419438808482}
   - component: {fileID: -4329840692524714292}
   m_Layer: 5
   m_Name: UiItem
@@ -134,6 +135,51 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
+--- !u!114 &197139419438808482
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4250489467633873662}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d0b148fe25e99eb48b9724523833bab1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Delegates:
+  - eventID: 0
+    callback:
+      m_PersistentCalls:
+        m_Calls:
+        - m_Target: {fileID: -4329840692524714292}
+          m_TargetAssemblyTypeName: Hangar.ComponentButton, Assembly-CSharp
+          m_MethodName: OnHover
+          m_Mode: 1
+          m_Arguments:
+            m_ObjectArgument: {fileID: 0}
+            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+            m_IntArgument: 0
+            m_FloatArgument: 0
+            m_StringArgument: 
+            m_BoolArgument: 0
+          m_CallState: 2
+  - eventID: 1
+    callback:
+      m_PersistentCalls:
+        m_Calls:
+        - m_Target: {fileID: -4329840692524714292}
+          m_TargetAssemblyTypeName: Hangar.ComponentButton, Assembly-CSharp
+          m_MethodName: OnStopHover
+          m_Mode: 1
+          m_Arguments:
+            m_ObjectArgument: {fileID: 0}
+            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+            m_IntArgument: 0
+            m_FloatArgument: 0
+            m_StringArgument: 
+            m_BoolArgument: 0
+          m_CallState: 2
 --- !u!114 &-4329840692524714292
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -147,6 +193,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   text: {fileID: 4516921913451653259}
+  tooltipPrefab: {fileID: 6896561494778064988, guid: 81f5f89bc978ea24b9c19e58dabb008b,
+    type: 3}
 --- !u!1 &4327666737383231782
 GameObject:
   m_ObjectHideFlags: 0

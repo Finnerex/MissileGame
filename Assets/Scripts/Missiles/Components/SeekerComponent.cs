@@ -61,5 +61,12 @@ namespace Missiles.Components
             if (isCaged)
                 maxGimbalAngle = fieldOfView;
         }
+
+        public override string ToString()
+        {
+            string cagedYesNo = isCaged ? "yes" : $"no\nMax Gimbal: {maxGimbalAngle}\u00B0";
+            
+            return $"{base.ToString()}\nFOV: {fieldOfView}\u00B0\nCaged: {cagedYesNo}";
+        }
     }
 }

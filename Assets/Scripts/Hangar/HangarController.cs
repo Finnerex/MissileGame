@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Missiles;
+using Missiles.Components;
 using Player;
 using UnityEngine;
 using Utility;
@@ -13,9 +14,9 @@ namespace Hangar
         
         public OrbitCamera orbitCamera;
         public GameObject defaultOrbitPoint;
+        [NonSerialized] public Vector3 lastCameraPos;
 
-        [NonSerialized] public MissilePreset? CurrentlySelectedPreset; 
-        // public WeaponsSystem hangarWeaponSystem;
+        [NonSerialized] public MissilePreset? CurrentlySelectedPreset;
         private readonly Dictionary<int, MissilePreset> _aircraftMissilePresets = new();
 
         private void Awake()
@@ -30,15 +31,21 @@ namespace Hangar
 
         public void SetEmptyMissile(int index, Transform t)
         {
-            if (CurrentlySelectedPreset is null) return;
-            
             foreach (Transform child in t)
-                Destroy(child.gameObject);
+                if (child.name != "Icon") // wow what a fix
+                    Destroy(child.gameObject);
+
+            if (CurrentlySelectedPreset is null)
+            {
+                _aircraftMissilePresets.Remove(index);
+                return;
+            }
             
             Instantiate(CurrentlySelectedPreset.Value.body.prefab, t.position, t.rotation, t);
-            Instantiate(CurrentlySelectedPreset.Value.avionics.prefab, t.position - t.transform.forward * 1.85f, t.rotation, t);
+            Instantiate(CurrentlySelectedPreset.Value.avionics.prefab, t.position, t.rotation, t);
             
             _aircraftMissilePresets[index] = CurrentlySelectedPreset.Value;
         }
+
     }
 }

@@ -14,45 +14,90 @@ namespace Player
         [SerializeField] private WeaponsSystem weaponsSystem;
         // [SerializeField] private MissilePreset testPreset;
 
+        [SerializeField] private float missileCircleStayTime = 5;
+
+        private float _currentCircleTime;
+        private bool _shouldCountDown;
+
+        private bool _hasSetupMissile;
+
+        private ForwardUiIcon _gimbalIconer;
+        private ForwardUiIcon _seekerIconer;
+
         private void Awake()
         {
             foreach (var pair in SceneChangeDataManager.Instance.WeaponSystemMissiles)
-            {
                 weaponsSystem.SetMissile(pair.Value, pair.Key);
-                Debug.Log($"Adding a missile at point #{pair.Key}");
-            }
-            
         }
 
         private void Update()
         {
-
-            if (Input.GetMouseButtonDown(4))
-            {
-                weaponsSystem.FireNext();
-                if (weaponsSystem.Missiles.TryPeek(out Missile m1))
-                    SelectMissile(m1);
-            }
-            
-            // this is not how i want this to work
-            if (Input.GetMouseButtonDown(3) && weaponsSystem.Missiles.TryPeek(out Missile m2))
-                SelectMissile(m2);
-            
-            // if (Input.GetKeyDown(KeyCode.T))
-            //     weaponsSystem.AddMissile(transform.position - transform.up * 2, transform.rotation, testPreset);
-            
+         
             if (Input.GetKeyDown(KeyCode.Space))
                 weaponsSystem.DeployFlares();
 
-            if (weaponsSystem.Missiles.TryPeek(out Missile m3))
-                UIController.Instance.missileLockCircle.color = m3.HasLock ?
+            // bool hasNext =; // maybe should be move to weapon system or smthing
+            if (!weaponsSystem.Missiles.TryPeek(out Missile nextMissile)) return;
+            // all of the following will only happen if the system has a next missile
+
+            if (Input.GetKeyDown(KeyCode.Mouse2))
+                nextMissile.Unlock();
+            
+            if (Input.GetKeyDown(KeyCode.Mouse3))
+            {
+                SelectMissile(nextMissile);
+                
+                UIController.Instance.missileGimbalCircle.gameObject.SetActive(true);
+                UIController.Instance.MissileLockRect.gameObject.SetActive(true);
+                _currentCircleTime = missileCircleStayTime;
+                _shouldCountDown = true;
+            }
+
+            if (_shouldCountDown && _currentCircleTime > 0)
+            {
+                if (nextMissile.hasLock)
+                    _currentCircleTime = missileCircleStayTime;
+                else
+                    _currentCircleTime -= Time.deltaTime;
+            }
+            else if (_shouldCountDown)
+            {
+                _shouldCountDown = false;
+                UIController.Instance.missileGimbalCircle.gameObject.SetActive(false);
+                UIController.Instance.MissileLockRect.gameObject.SetActive(false);
+                nextMissile.selected = false;
+            }
+
+            UIController.Instance.missileLockCircle.color = nextMissile.hasLock ? 
                 new Color(0.8f, 0.28f, 0.2f) : new Color(0.75f, 0.75f, 0.7f);
 
+            if (Input.GetKeyDown(KeyCode.Mouse4) && nextMissile.hasLock)
+            {
+                weaponsSystem.FireNext();
+
+                Destroy(_gimbalIconer);
+                Destroy(_seekerIconer);
+                
+                _hasSetupMissile = false;
+                
+                if (weaponsSystem.Missiles.TryPeek(out Missile m1))
+                    SelectMissile(m1);
+                else
+                {
+                    UIController.Instance.missileGimbalCircle.gameObject.SetActive(false);
+                    UIController.Instance.MissileLockRect.gameObject.SetActive(false);
+                }
+            }
+            
         }
 
 
         private void SelectMissile(Missile missile)
         {
+            missile.selected = true;
+            
+            if (_hasSetupMissile) return;
+            
             float circleDiameter = 2 * Mathf.Tan(missile.seeker.fieldOfView * 0.5f * Mathf.Deg2Rad) * 500;
             UIController.Instance.MissileLockRect.sizeDelta = new Vector2(circleDiameter, circleDiameter);
 
@@ -65,12 +110,13 @@ namespace Player
                 UIController.Instance.missileGimbalCircle.sizeDelta = new Vector2(circleDiameter, circleDiameter);
             }
             
-            missile.Select();
-            
-            // maybe should be removed when fired or idk really how to handle this
-            ForwardUiIcon seekerIcon = missile.seekerHead.AddComponent<ForwardUiIcon>();
-            seekerIcon.icon = UIController.Instance.MissileLockRect;
-            missile.AddComponent<ForwardUiIcon>().icon = UIController.Instance.missileGimbalCircle;
+            _seekerIconer = missile.seekerHead.AddComponent<ForwardUiIcon>();
+            _seekerIconer.icon = UIController.Instance.MissileLockRect;
+            _gimbalIconer = missile.AddComponent<ForwardUiIcon>();
+            _gimbalIconer.icon = UIController.Instance.missileGimbalCircle;
+
+            _hasSetupMissile = true;
+
         }
     }
 }

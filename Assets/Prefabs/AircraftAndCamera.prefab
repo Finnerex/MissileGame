@@ -147,16 +147,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   weaponsSystem: {fileID: 5129215791870034556}
-  testPreset:
-    seeker: {fileID: 11400000, guid: 5afead34a1043ed4094ce55fde8d48f6, type: 2}
-    computer: {fileID: 11400000, guid: 5ea0d6f8c8eb1284f91ad87824aa9d7e, type: 2}
-    warhead: {fileID: 11400000, guid: 0a4e78334a2eba646b6669208a402576, type: 2}
-    booster: {fileID: 11400000, guid: 1ac4c49cd46d86742accc2bff4e0eb28, type: 2}
-    avionics: {fileID: 11400000, guid: ceb217c386bbb1340b43fcc4fa476f4d, type: 2}
-    body: {fileID: 11400000, guid: 97c2ed0227b2aa941bb74d906eb485cd, type: 2}
-  hardpoints: []
-  countermeasureDispensers:
-  - {fileID: 1920898382248719756}
+  missileCircleStayTime: 8
 --- !u!114 &6878945599866815172
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -445,9 +436,10 @@ MonoBehaviour:
   scrollSensitivity: 6
   minDistance: 10
   maxDistance: 50
-  zoomFOV: 30
-  zoomTimeSeconds: 0.5
+  zoomFOV: 10
+  zoomTimeSeconds: 0.15
   sensitivity: 2
+  requireRightClickDrag: 0
 --- !u!1001 &8333398525333030503
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -538,18 +530,6 @@ GameObject:
     type: 3}
   m_PrefabInstance: {fileID: 8333398525333030503}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &1920898382248719756 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 7570070662076953579, guid: 256dd5acd188652449bcf4a9c0f76688,
-    type: 3}
-  m_PrefabInstance: {fileID: 8333398525333030503}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3fdd9215bbd64f09824b750fd2aa985a, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!114 &5129215791870034556 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 3785433095872807963, guid: 256dd5acd188652449bcf4a9c0f76688,

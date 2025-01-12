@@ -8,7 +8,7 @@ namespace Targeting
     {
         [SerializeField] private Rigidbody parentRigidbody;
         
-        [SerializeField] private Flare flarePrefab;
+        [SerializeField] private Rigidbody flarePrefab;
         [SerializeField] private float flareDeployForce = 10;
         private Transform _transform;
 
@@ -19,9 +19,9 @@ namespace Targeting
         
         public void DeployFlare()
         {
-            Flare createdFlare = Instantiate(flarePrefab, _transform.position, Quaternion.identity);
-            createdFlare.flareRigidbody.velocity = parentRigidbody.velocity;
-            createdFlare.flareRigidbody.AddForce(_transform.forward * flareDeployForce);
+            Rigidbody createdFlare = Instantiate(flarePrefab, _transform.position, Quaternion.identity);
+            createdFlare.velocity = parentRigidbody.velocity;
+            createdFlare.AddForce(_transform.forward * flareDeployForce);
             Destroy(createdFlare.gameObject, 5);
         }
 

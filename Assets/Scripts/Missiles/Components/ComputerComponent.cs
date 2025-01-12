@@ -54,6 +54,10 @@ namespace Missiles.Components
         private Vector3 GetProportionalAcceleration(Vector3 displacement, Vector3 relativeVelocity) =>
             proportionalityConstant * Vector3.Cross(relativeVelocity, Vector3.Cross(displacement, relativeVelocity) / displacement.sqrMagnitude);
 
+        public override string ToString()
+        {
+            return $"{base.ToString()}\nGuidance Type: {guidanceType}";
+        }
     }
 
     public enum ComputerGuidanceType

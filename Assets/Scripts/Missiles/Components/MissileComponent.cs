@@ -5,9 +5,12 @@ namespace Missiles.Components
 {
     public abstract class MissileComponent : ScriptableObject
     {
-        public GameObject prefab;
-        public int size;
-        public float scaleFactor;
-        [NonSerialized] public GameObject SpawnedObject; // TODO: this is not going to work if there are multiple but might be fine
+        public string displayName;
+        public int size; // small ass class !!!!! :(
+
+        public override string ToString()
+        {
+            return $"Size: {size}u";
+        }
     }
 }

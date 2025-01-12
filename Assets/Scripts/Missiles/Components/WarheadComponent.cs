@@ -1,4 +1,5 @@
 ﻿using System;
+using Targeting;
 using UnityEngine;
 using Utility;
 
@@ -42,10 +43,16 @@ namespace Missiles.Components
                 if (Exploded[i].TryGetComponent(out Rigidbody rb))
                     rb.AddExplosionForce(5000, position, explosionRadius);
                     // rb.AddForceAtPosition(displacement.normalized / (0.0001f * displacement.magnitude + 1), position, ForceMode.Impulse);
-                
-                
+                    
             }
 
+        }
+
+        public override string ToString()
+        {
+            string fuseYesNo = proximityFuse ? "yes" : "no";
+            
+            return $"{base.ToString()}\nExplosionSize: {explosionRadius}\nProximity Fuse: {fuseYesNo}";
         }
     }
 }

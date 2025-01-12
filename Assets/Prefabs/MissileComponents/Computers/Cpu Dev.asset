@@ -9,11 +9,11 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d2e4967f29e042dfb628bbecb807583c, type: 3}
-  m_Name: Booster
+  m_Script: {fileID: 11500000, guid: 8414769c755341c18346e007575ddce8, type: 3}
+  m_Name: Cpu Dev
   m_EditorClassIdentifier: 
-  prefab: {fileID: 2974828793398642274, guid: 1b9cc63f8e3a80b4e8ae5c06a038fa0a, type: 3}
+  displayName: 
   size: 2
-  scaleFactor: 1
-  burnTimeSeconds: 30
-  thrustMultiplier: 30
+  guidanceType: 2
+  hasInertialGuidance: 0
+  proportionalityConstant: 300

@@ -1,14 +1,16 @@
 ﻿using System;
 using UnityEngine;
+using Utility;
 
-namespace Utility
+namespace Targeting
 {
     public class Damageable : MonoBehaviour
     {
 
         [SerializeField] private bool willExplode;
         [SerializeField] private bool producesSmoke;
-        
+
+        public event Action onDestroy; 
         
         public float maxHealth = 100;
         public float Health { get; private set; }
@@ -33,6 +35,7 @@ namespace Utility
                     
             Health = 0;
             Destroy(gameObject);
+            onDestroy?.Invoke();
         }
         
     }

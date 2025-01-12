@@ -26,7 +26,7 @@ namespace Missiles
         {
             Missile missile = Instantiate(defaultMissilePrefab, position, rotation, transform);
             Instantiate(preset.body.prefab, position, rotation, missile.transform);
-            Instantiate(preset.avionics.prefab, position - missile.transform.forward * 1.85f, rotation, missile.transform);
+            Instantiate(preset.avionics.prefab, position, rotation, missile.transform);
             
             missile.seeker = preset.seeker;
             missile.computer = preset.computer;
@@ -42,7 +42,6 @@ namespace Missiles
         public void SetMissile(MissilePreset preset, int index)
         {
             Transform t = attachmentPoints[index];
-            Debug.Log($"adding to index {index} : {t.gameObject.name}");
             AddMissile(t.position, t.rotation, preset);
         }
 

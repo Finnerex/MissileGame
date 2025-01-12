@@ -12,8 +12,6 @@ namespace Missiles.Components
         // TODO: Make this see the sun
         public override Transform GetTargetPosition(Transform thisTransform)
         {
-            // Debug.Log("position is being gotten from ir seeker!!");
-
             Vector3 position = thisTransform.position;
             
             int numberOfObjects = OverlapConeNonAlloc(position, thisTransform.forward, HitObjects, fieldOfView * 0.5f, lockRange,
@@ -39,12 +37,15 @@ namespace Missiles.Components
                 {
                     highestTempVolume = volume;
                     highestPerceivedTemp = perceivedTemp;
-                    // Debug.Log("highest temp is now: " + volume.temperature);
                 }
             }
 
             return highestTempVolume?.transform;
         }
-        
+
+        public override string ToString()
+        {
+            return $"{base.ToString()}\nSeeker Type: IR\nTemperature Threshold: {minTemperature}K";
+        }
     }
 }

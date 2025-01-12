@@ -4839,9 +4839,9 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 8086363528263430673}
-  - component: {fileID: 5739693943649570604}
+  - component: {fileID: -6728739018587078333}
   - component: {fileID: 8285279659330244039}
-  - component: {fileID: 1953713128900316957}
+  - component: {fileID: 8358858496466913105}
   - component: {fileID: 1051734946744123395}
   - component: {fileID: 8827425170031784654}
   - component: {fileID: 6461509616536301261}
@@ -4868,8 +4868,8 @@ Transform:
   - {fileID: 9077009610313617346}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!65 &5739693943649570604
-BoxCollider:
+--- !u!135 &-6728739018587078333
+SphereCollider:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -4883,11 +4883,11 @@ BoxCollider:
     serializedVersion: 2
     m_Bits: 0
   m_LayerOverridePriority: 0
-  m_IsTrigger: 1
+  m_IsTrigger: 0
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.8, y: 0.8, z: 0.8}
+  m_Radius: 0.4
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!114 &8285279659330244039
 MonoBehaviour:
@@ -4902,7 +4902,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   temperature: 1800
---- !u!114 &1953713128900316957
+--- !u!114 &8358858496466913105
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -4911,10 +4911,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 8634630697312574471}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 37bc3c8932354ddab05e08733bd0b7aa, type: 3}
+  m_Script: {fileID: 11500000, guid: 9e4097389eb041cbbd148a33aa5d22f7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  flareRigidbody: {fileID: 1051734946744123395}
 --- !u!54 &1051734946744123395
 Rigidbody:
   m_ObjectHideFlags: 0

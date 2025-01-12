@@ -1,65 +1,52 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using Missiles.Components;
+using UnityEditor;
 using UnityEngine;
 
 namespace Hangar
 {
-    public class Inventory : HangarInteractable
+    public class Inventory : HangarInteractable // kinda doesnt need to extend this any more
     {
+        // i would really appreciate it if i could load these dynamically using a file path but it seems that is very difficult
         public List<MissileComponent> componentInventory;
-        // public List<InventoryItem> ItemInventory;
+        // public List<InventoryItem> ItemInventory; // things used to make the components
 
-        [SerializeField] private GameObject scrollView;
         [SerializeField] private ComponentButton itemPrefab;
-        
-        private Transform _componentInventoryContent;
-        
+        [SerializeField] private GameObject componentUI;
+
+        [SerializeField] private Transform[] componentTypeSections; // array is a thing here i guess
+
         public static Inventory Instance;
 
         private void Awake()
         {
             Instance = this;
-            _componentInventoryContent = scrollView.transform.Find("Viewport/Content");
-        }
-        
-        
-        public override void OnInteract()
-        {
-            // if (Selected)
-            //     return;
-            
-            base.OnInteract();
-            // componentInventory.SetActive(true);
-
-            ShowComponentInventory();
-            
         }
 
-        protected override void Exit()
-        {
-            base.Exit();
-
-            HideComponentInventory();
-
-            // presetsMenu.SetActive(false);
-        }
-
-        public void ShowComponentInventory()
+        private void Start()
         {
             foreach (var component in componentInventory)
             {
+                Transform parent = component switch // and this is kinda ass
+                {
+                    BodyComponent _ => componentTypeSections[0],
+                    AvionicsComponent _ => componentTypeSections[1],
+                    SeekerComponent _ => componentTypeSections[2],
+                    ComputerComponent _ => componentTypeSections[3],
+                    WarheadComponent _ => componentTypeSections[4],
+                    _ => componentTypeSections[5], // BoosterComponent
+                };
+                
+                ComponentButton button = Instantiate(itemPrefab, parent);
                 // TODO: these should be the model or an icon
-                ComponentButton button = Instantiate(itemPrefab, _componentInventoryContent);
-                button.SetText(component.name);
+                button.SetText(string.IsNullOrEmpty(component.displayName) ? component.name : component.displayName);
                 button.Component = component;
             }
-        }
-
-        public void HideComponentInventory()
-        {
-            foreach (RectTransform child in _componentInventoryContent)
-                Destroy(child.gameObject);
+            
+            componentUI.SetActive(false); // has to be initially active for some reason or else the doggone buttons break
+            
         }
 
     }

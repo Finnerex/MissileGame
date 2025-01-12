@@ -7,9 +7,6 @@ namespace Missiles.Components
     {
         public override Transform GetTargetPosition(Transform thisTransform)
         {
-            
-            Debug.Log("target is bving hgoty from ommi");
-            
             int numberOfObjects = OverlapConeNonAlloc(thisTransform.position, thisTransform.forward, HitObjects, fieldOfView * 0.5f, lockRange,
                 LayerMask.GetMask("Target"));
 

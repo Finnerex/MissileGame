@@ -1,36 +1,50 @@
-﻿using System;
+﻿using System.Linq;
 using UnityEngine;
 
 namespace Hangar
 {
     public class HangarInteractable : MonoBehaviour, IInteractable
     {
-        [SerializeField] private GameObject ui;
+        [SerializeField] private GameObject[] ui;
         [SerializeField] private GameObject cameraPoint;
+        [SerializeField] private bool lockCamera = true;
 
-        // protected bool Selected;
+        protected static bool AnySelected;
+        private bool _thisSelected;
 
         public virtual void OnInteract()
         {
-            // if (Selected)
-            //     return;
-            // Selected = true;
+            if (AnySelected)
+                return;
             
-            ui.SetActive(true);
-            Cursor.visible = true;
-            Cursor.lockState = CursorLockMode.Confined;
+            AnySelected = true;
+            _thisSelected = true;
 
-            // HangarController.Instance.orbitCamera.center = gameObject;
+            foreach (GameObject element in ui)
+                element.SetActive(true);
+
+            HangarController.Instance.lastCameraPos = HangarController.Instance.orbitCamera.transform.position;
             HangarController.Instance.orbitCamera.transform.position = cameraPoint.transform.position;
             HangarController.Instance.orbitCamera.transform.rotation = cameraPoint.transform.rotation;
-            // HangarController.Instance.orbitCamera.transform.LookAt(transform.position);
+            
+            Cursor.visible = true;
+            Cursor.lockState = CursorLockMode.Confined;
+            
+            if (!lockCamera)
+            {
+                HangarController.Instance.orbitCamera.SwitchTo(transform);
+                HangarController.Instance.orbitCamera.transform.LookAt(transform.position);
+
+                return;
+            }
+
             HangarController.Instance.orbitCamera.enabled = false;
             
         }
 
         private void Update()
         {
-            if (!ui.activeSelf)
+            if (!_thisSelected)
                 return;
             
             if (Input.GetKey(KeyCode.Escape))
@@ -39,13 +53,18 @@ namespace Hangar
 
         protected virtual void Exit()
         {
-            ui.SetActive(false);
-            Cursor.visible = false;
-            Cursor.lockState = CursorLockMode.Locked;
-            // HangarController.Instance.orbitCamera.center = HangarController.Instance.defaultOrbitPoint;
+            foreach (GameObject element in ui)
+                element.SetActive(false);
+
             HangarController.Instance.orbitCamera.enabled = true;
 
-            // Selected = false;
+            HangarController.Instance.orbitCamera.transform.position = HangarController.Instance.lastCameraPos;
+            
+            HangarController.Instance.orbitCamera.SwitchTo(HangarController.Instance.defaultOrbitPoint.transform);
+            HangarController.Instance.orbitCamera.transform.LookAt(HangarController.Instance.defaultOrbitPoint.transform);
+
+            AnySelected = false;
+            _thisSelected = false;
         }
         
     }
