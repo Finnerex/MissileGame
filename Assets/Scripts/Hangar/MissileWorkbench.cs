@@ -84,7 +84,7 @@ namespace Hangar
                 case AvionicsComponent avionics:
                     ReplaceComponent(ref currentPreset.avionics, avionics);
                     Destroy(_spawnedFins);
-                    _spawnedFins = Instantiate(avionics.prefab, _spawnedBody.transform.position, _spawnedBody.transform.rotation, missileParent);
+                    _spawnedFins = Instantiate(avionics.prefab, _spawnedBody.transform.position, avionics.prefab.transform.rotation, missileParent);
                     break;
             }
             
@@ -109,13 +109,14 @@ namespace Hangar
         
         public void Save()
         {
-            if (!currentPreset.IsValid) return;
+            if (!currentPreset.isValid) return;
             
+            currentPreset.name = textEntryField.text;
             if (SavedPresets.TryAdd(textEntryField.text, currentPreset))
                 Instantiate(presetButtonPrefab, presetMenuContent).SetText(textEntryField.text);
             else // add overwrite dialogue box or something
                 SavedPresets[textEntryField.text] = currentPreset;
-                
+
             // textEntryField.text = "";
 
         }

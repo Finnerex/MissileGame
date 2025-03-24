@@ -31,7 +31,7 @@ namespace Missiles.Components
                 if (!targets[i].TryGetComponent(out TemperatureVolume volume))
                     continue;
 
-                float perceivedTemp = volume.temperature / (position - volume.transform.position).sqrMagnitude;
+                float perceivedTemp = volume.GetPerceivedTempFromPosition(position);
                 
                 if ((highestTempVolume is null || perceivedTemp > highestPerceivedTemp) && perceivedTemp > minTemperature)
                 {

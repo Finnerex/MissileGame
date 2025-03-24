@@ -6,14 +6,16 @@ namespace Missiles
     [Serializable]
     public struct MissilePreset
     {
+        public string name;
+        
         public SeekerComponent seeker;
         public ComputerComponent computer;
         public WarheadComponent warhead;
         public BoosterComponent booster;
         public AvionicsComponent avionics;
         public BodyComponent body;
-
-        public bool IsValid => seeker != null && computer != null &&
+        
+        public bool isValid => seeker != null && computer != null &&
                                warhead != null && booster != null &&
                                avionics != null && body != null;
     }

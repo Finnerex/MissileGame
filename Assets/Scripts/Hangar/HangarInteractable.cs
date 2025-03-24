@@ -60,8 +60,8 @@ namespace Hangar
 
             HangarController.Instance.orbitCamera.transform.position = HangarController.Instance.lastCameraPos;
             
-            HangarController.Instance.orbitCamera.SwitchTo(HangarController.Instance.defaultOrbitPoint.transform);
-            HangarController.Instance.orbitCamera.transform.LookAt(HangarController.Instance.defaultOrbitPoint.transform);
+            HangarController.Instance.orbitCamera.ResetView();
+            // HangarController.Instance.orbitCamera.transform.LookAt(HangarController.Instance.defaultOrbitPoint.transform);
 
             AnySelected = false;
             _thisSelected = false;

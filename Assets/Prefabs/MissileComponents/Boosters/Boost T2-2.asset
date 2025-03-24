@@ -12,6 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d2e4967f29e042dfb628bbecb807583c, type: 3}
   m_Name: Boost T2-2
   m_EditorClassIdentifier: 
+  displayName: 
   size: 2
-  burnTimeSeconds: 2
-  thrustMultiplier: 25
+  burnTimeSeconds: 3
+  thrustMultiplier: 35

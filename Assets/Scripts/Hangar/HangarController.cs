@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using Missiles;
-using Missiles.Components;
-using Player;
 using UnityEngine;
 using Utility;
 
@@ -13,7 +11,7 @@ namespace Hangar
         public static HangarController Instance;
         
         public OrbitCamera orbitCamera;
-        public GameObject defaultOrbitPoint;
+        // public GameObject defaultOrbitPoint;
         [NonSerialized] public Vector3 lastCameraPos;
 
         [NonSerialized] public MissilePreset? CurrentlySelectedPreset;
@@ -41,8 +39,10 @@ namespace Hangar
                 return;
             }
             
-            Instantiate(CurrentlySelectedPreset.Value.body.prefab, t.position, t.rotation, t);
-            Instantiate(CurrentlySelectedPreset.Value.avionics.prefab, t.position, t.rotation, t);
+            GameObject avionicsPrefab = CurrentlySelectedPreset.Value.avionics.prefab;
+            
+            GameObject body = Instantiate(CurrentlySelectedPreset.Value.body.prefab, t);
+            Instantiate(avionicsPrefab, body.transform.position, t.rotation * avionicsPrefab.transform.rotation, t);
             
             _aircraftMissilePresets[index] = CurrentlySelectedPreset.Value;
         }

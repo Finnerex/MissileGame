@@ -1,4 +1,5 @@
 ﻿using System;
+using Targeting;
 using UnityEngine;
 
 namespace Aerodynamics
@@ -7,7 +8,7 @@ namespace Aerodynamics
     {
 
         [SerializeField] private Rigidbody rb;
-        
+
         // not actually a hard limit just used for the animation curve
         [SerializeField] private float maxSpeedMpS = 600;
         [SerializeField] private float maxAltM = 5000;
@@ -16,6 +17,9 @@ namespace Aerodynamics
         [SerializeField] private AnimationCurve thrustThrottleCurve;
         [SerializeField] private AnimationCurve thrustVelocityCurve;
         [SerializeField] private AnimationCurve thrustAltitudeCurve;
+
+        [SerializeField] private TemperatureVolume temperatureVolume;
+        private float _maxTemperature;
         
         private Transform _transform;
         private float _throttle;
@@ -25,7 +29,11 @@ namespace Aerodynamics
         public float Throttle
         {
             get => _throttle;
-            set => _throttle = Mathf.Clamp(value, 0, 1);
+            set
+            {
+                _throttle = Mathf.Clamp(value, 0, 1);
+                // temperatureVolume.temperature = _maxTemperature * (_throttle + 1) * 0.5f; // 0.5 * max -> max // TODO: doesnt work
+            }
         }
         
         private void Start()
@@ -33,8 +41,9 @@ namespace Aerodynamics
             _transform = transform;
             _inverseMaxSpeed = 1 / maxSpeedMpS;
             _inverseMaxAlt = 1 / maxAltM;
+            _maxTemperature = temperatureVolume.temperature;
         }
-        
+
         private void FixedUpdate()
         {
             Vector3 thrustForce = Throttle * thrustForceMultiplier *

@@ -6,6 +6,8 @@ namespace Aerodynamics
 {
     public class AeroBody : MonoBehaviour
     {
+        [SerializeField] private float aerodynamicDrag = 1;
+        
         [SerializeField] private ControlSurface[] controlSurfaces;
         [SerializeField] private AeroSurface[] aeroSurfaces;
 
@@ -46,6 +48,9 @@ namespace Aerodynamics
                 forceAndTorque += surface.CalculateForces(velocity + Vector3.Cross(angularVelocity, relativePosition),
                     airDensity, relativePosition);
             }
+
+            forceAndTorque.p -= aerodynamicDrag * rb.velocity.magnitude * rb.velocity; // Cv^2 
+            
             return forceAndTorque;
         }
         

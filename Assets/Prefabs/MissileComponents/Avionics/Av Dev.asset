@@ -12,6 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ca7149a3bca84315bd19c4b07e9d5f5b, type: 3}
   m_Name: Av Dev
   m_EditorClassIdentifier: 
+  displayName: 
   size: 1
-  prefab: {fileID: 919132149155446097, guid: 2ffff095923c7aa4fabdcb11c387c681, type: 3}
+  prefab: {fileID: 1557880425961518039, guid: 8b5611bfc5a05354aa40d2d8f3bf4605, type: 3}
   maxOverloadGees: 100

@@ -31,6 +31,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 4253098336317550274}
+  - {fileID: 9089297264517424408}
   m_Father: {fileID: 5325900600180144922}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1773428102 &5135916493873262323
@@ -60,6 +61,53 @@ ParentConstraint:
   m_Sources:
   - sourceTransform: {fileID: 5353978097517004343}
     weight: 1
+--- !u!1 &1407830077485069181
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 9089297264517424408}
+  - component: {fileID: 3045744163254564419}
+  m_Layer: 0
+  m_Name: TargetDirectioner
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &9089297264517424408
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1407830077485069181}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0.007760763, y: -4.5, z: -3.3906083}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 450131851401541693}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &3045744163254564419
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1407830077485069181}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3662fbb8bc8a4eaeafb1a764bcfce977, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  icon: {fileID: 0}
+  cam: {fileID: 7116247441651856501}
+  distance: 500
 --- !u!1 &7679229908191010838
 GameObject:
   m_ObjectHideFlags: 0
@@ -110,15 +158,19 @@ MonoBehaviour:
   aeroBody: {fileID: 7438549430631566893}
   engine: {fileID: 8297131453078136223}
   throttleStep: 1
-  controlSurfaceRate: 4
-  trim: {x: 0, y: 0, z: 0}
+  trim: {x: -0.13, y: 0, z: 0}
   cam: {fileID: 7116247441651856501}
+  targetDirection: {fileID: 0}
   thrusterA: {fileID: 1650522361492659228}
   thrusterB: {fileID: 8016669381271592617}
   maxThrusterJiggleStrength: 0.0025
   afterburnerThrottlePct: 0.7
   instructorText: {fileID: 0}
   geeForceText: {fileID: 0}
+  pid:
+    kp: {x: 0.5, y: 0, z: 0}
+    ki: {x: 0.05, y: 0.05, z: 0.05}
+    kd: {x: 0.05, y: 0.05, z: 0.05}
 --- !u!114 &2409408072706612548
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -148,6 +200,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   weaponsSystem: {fileID: 5129215791870034556}
   missileCircleStayTime: 8
+  orbitCam: {fileID: 1265011569073385142}
 --- !u!114 &6878945599866815172
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -162,8 +215,74 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   spottingSystem: {fileID: 576526485520560722}
   spottingPeriodSeconds: 4
-  enemyIcon: {fileID: 7060474654907708118, guid: 5ab9d77d8e41f4c42a7fcf44b27fb819,
-    type: 3}
+  icon: {fileID: 2800000, guid: 167c5c7e40a31b646b11fc4885c74e46, type: 3}
+  style:
+    m_Name: 
+    m_Normal:
+      m_Background: {fileID: 0}
+      m_ScaledBackgrounds: []
+      m_TextColor: {r: 0.6698113, g: 0.21168563, b: 0.21168563, a: 1}
+    m_Hover:
+      m_Background: {fileID: 0}
+      m_ScaledBackgrounds: []
+      m_TextColor: {r: 0, g: 0, b: 0, a: 1}
+    m_Active:
+      m_Background: {fileID: 0}
+      m_ScaledBackgrounds: []
+      m_TextColor: {r: 0, g: 0, b: 0, a: 1}
+    m_Focused:
+      m_Background: {fileID: 0}
+      m_ScaledBackgrounds: []
+      m_TextColor: {r: 0, g: 0, b: 0, a: 1}
+    m_OnNormal:
+      m_Background: {fileID: 0}
+      m_ScaledBackgrounds: []
+      m_TextColor: {r: 0, g: 0, b: 0, a: 1}
+    m_OnHover:
+      m_Background: {fileID: 0}
+      m_ScaledBackgrounds: []
+      m_TextColor: {r: 0, g: 0, b: 0, a: 1}
+    m_OnActive:
+      m_Background: {fileID: 0}
+      m_ScaledBackgrounds: []
+      m_TextColor: {r: 0, g: 0, b: 0, a: 1}
+    m_OnFocused:
+      m_Background: {fileID: 0}
+      m_ScaledBackgrounds: []
+      m_TextColor: {r: 0, g: 0, b: 0, a: 1}
+    m_Border:
+      m_Left: 0
+      m_Right: 0
+      m_Top: 0
+      m_Bottom: 0
+    m_Margin:
+      m_Left: 0
+      m_Right: 0
+      m_Top: 0
+      m_Bottom: 0
+    m_Padding:
+      m_Left: 0
+      m_Right: 0
+      m_Top: 0
+      m_Bottom: 0
+    m_Overflow:
+      m_Left: 0
+      m_Right: 0
+      m_Top: 0
+      m_Bottom: 0
+    m_Font: {fileID: 12800000, guid: 5af6400d2d091be40b711e314463fc73, type: 3}
+    m_FontSize: 10
+    m_FontStyle: 0
+    m_Alignment: 4
+    m_WordWrap: 0
+    m_RichText: 1
+    m_TextClipping: 0
+    m_ImagePosition: 0
+    m_ContentOffset: {x: 0, y: 0}
+    m_FixedWidth: 0
+    m_FixedHeight: 0
+    m_StretchWidth: 1
+    m_StretchHeight: 0
 --- !u!1 &8645908792318796968
 GameObject:
   m_ObjectHideFlags: 0
@@ -432,7 +551,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ba0c755335a14739bf39b53f8c3fb24d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  center: {fileID: 139268514126053612}
+  center: {fileID: 450131851401541693}
   scrollSensitivity: 6
   minDistance: 10
   maxDistance: 50
@@ -502,6 +621,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Name
       value: F18
+      objectReference: {fileID: 0}
+    - target: {fileID: 4701405724682949744, guid: 256dd5acd188652449bcf4a9c0f76688,
+        type: 3}
+      propertyPath: m_Layer
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

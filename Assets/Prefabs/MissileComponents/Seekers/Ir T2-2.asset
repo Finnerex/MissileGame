@@ -18,4 +18,4 @@ MonoBehaviour:
   fieldOfView: 5
   maxGimbalAngle: 25
   lockRange: 8000
-  minTemperature: 0
+  minTemperature: 1500

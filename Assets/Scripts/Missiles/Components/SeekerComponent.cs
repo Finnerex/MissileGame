@@ -49,6 +49,8 @@ namespace Missiles.Components
             
             Vector3 displacement = at - transform.position;
             float angle = Vector3.Angle(forward, displacement);
+
+            if (fired) angle *= 0.5f; // cheating! (basically has double fov if fired to help with jerking motions losing track)
             
             if (angle > maxGimbalAngle)
                 return;

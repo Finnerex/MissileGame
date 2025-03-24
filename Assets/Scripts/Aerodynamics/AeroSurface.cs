@@ -23,7 +23,8 @@ namespace Aerodynamics
         {
             velocity *= Time.fixedDeltaTime;
             
-            float AoA = Vector3.SignedAngle(_transform.forward, velocity, _transform.right);
+            // float AoA = Vector3.SignedAngle(_transform.forward, velocity, _transform.right);
+            float AoA = Util.AngleAroundAxis(_transform.forward, velocity, _transform.right);
             
             if (AoA > 90)
                 AoA = 180 - AoA;

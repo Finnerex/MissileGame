@@ -51,6 +51,7 @@ namespace Enemy
             Debug.Log($"going to {_targetPosition}");
 
             engine.Throttle = 0.9f;
+            aeroBody.rb.velocity = _transform.forward * 150;
         }
 
         private void Update()
@@ -91,7 +92,7 @@ namespace Enemy
             float rollAngle = Util.AngleAroundAxis(Vector3.down, -_transform.up, _transform.forward);
             
             // perchance dampen based on distance
-            control.x = pitchAngle * -0.05f;
+            control.x = pitchAngle * -0.05f - 0.1f;
             control.y = yawAngle * 0.02f;
             control.z = yawAngle switch
             {

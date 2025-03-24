@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Targeting;
 using UnityEngine;
 using Utility;
@@ -9,10 +10,11 @@ namespace Player
     {
         [SerializeField] private SpottingSystem spottingSystem;
         [SerializeField] private float spottingPeriodSeconds = 10;
-
-        [SerializeField] private ObjectMarkerIcon enemyIcon;
         
-        private List<ObjectMarkerIcon> _uiIcons = new();
+        [SerializeField] private Texture2D icon;
+        [SerializeField] private GUIStyle style;
+
+        // private List<ObjectMarkerIcon> _uiIcons = new();
 
         private Transform _transform;
         private float _currentSpotTime;
@@ -24,6 +26,30 @@ namespace Player
             _transform = transform;
         }
 
+        private void OnGUI()
+        {
+            if (spottingSystem.SpottedObjects.Count == 0)
+                return;
+
+            foreach (GameObject obj in spottingSystem.SpottedObjects)
+            {
+
+                Transform t = obj.transform;
+                Vector3 screenPosition = _cam.WorldToScreenPoint(t.position);
+
+                if (screenPosition.z <= 0) continue;
+                
+                Vector2 guiPosition = new Vector2(screenPosition.x, Screen.height - screenPosition.y);
+                
+                GUI.DrawTexture(new Rect(guiPosition.x - 4, guiPosition.y - 12, 8, 8), icon);
+
+                float dist = (t.position - _transform.position).magnitude;
+                GUI.Label(new Rect(guiPosition.x - 50, guiPosition.y + 2, 100, 20), dist > 1000 ? $"{dist / 1000:F2} km" : $"{dist:F0} m", style);
+                
+            }
+            
+        }
+
         private void Update()
         {
             if (_currentSpotTime >= spottingPeriodSeconds)
@@ -33,44 +59,7 @@ namespace Player
             }
 
             _currentSpotTime += Time.deltaTime;
-            
-            // i dont really know if i want to do this every frame
-            int difference = spottingSystem.SpottedObjects.Count - _uiIcons.Count;
-                
-            // Debug.Log($"Difference: {difference}, system count: {spottingSystem.SpottedObjects.Count}, ui count: {_uiIcons.Count}");
-                
-            for (int i = 0; i < Mathf.Abs(difference); i++)
-            {
-                if (difference < 0)
-                {
-                    Destroy(_uiIcons[i].gameObject);
-                    _uiIcons.RemoveAt(i);
-                }
-                else
-                    _uiIcons.Add(Instantiate(enemyIcon, UIController.Instance.transform));
-            }
-            
-            int j = 0;
-            foreach (GameObject spotted in spottingSystem.SpottedObjects)
-            {
-                if (spotted == null)
-                {
-                    j++;
-                    continue;
-                }
-                
-                Vector3 pos = _cam.WorldToScreenPoint(spotted.transform.position);
-                if (pos.z >= 0)
-                {
-                    pos.z = 20;
-                    pos.y += 6;
 
-                    _uiIcons[j].rectTransform.position = pos;
-                    _uiIcons[j].Distance = (_transform.position - spotted.transform.position).magnitude;
-                }
-                j++;
-            }
-            
         }
     }
 }

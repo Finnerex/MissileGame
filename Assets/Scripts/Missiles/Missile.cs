@@ -1,9 +1,5 @@
-﻿using System;
-using System.Linq;
-using System.Linq.Expressions;
-using Aerodynamics;
+﻿using Aerodynamics;
 using Missiles.Components;
-using Player;
 using UnityEngine;
 using Utility;
 
@@ -13,6 +9,8 @@ namespace Missiles
     {
         // this is kinda unsafe but should work as long as i dont fuck it up
         private static readonly Vector3 InvalidTarget = new (float.MinValue, float.MinValue, float.MinValue);
+
+        public string presetName;
         
         public SeekerComponent seeker;
         public ComputerComponent computer;
@@ -24,11 +22,12 @@ namespace Missiles
         public Transform seekerHead;
         
         public bool hasLock { get; private set; }
-        public bool selected;
+        public bool selected { get; private set; }
 
         [SerializeField] private AeroBody aeroBody;
         [SerializeField] private float armTimeSeconds;
         [SerializeField] private ParticleSystem[] particleSystems;
+        [SerializeField] private AnimationCurve overloadControlCurve;
 
         private Transform _targetTransform;
         private Transform _transform;
@@ -52,6 +51,23 @@ namespace Missiles
         public void Unlock()
         {
             _targetTransform = null;
+            hasLock = false;
+            seekerHead.localRotation = Quaternion.identity;
+        }
+
+        public void Select()
+        {
+            selected = true;
+            hasLock = false;
+            _targetTransform = null;
+        }
+        
+        public void Deselect()
+        {
+            selected = false;
+            hasLock = false;
+            _targetTransform = null;
+            seekerHead.localRotation = Quaternion.identity;
         }
 
         public void Fire()
@@ -107,7 +123,7 @@ namespace Missiles
             
             if (!_armed) return;
             
-            if (warhead.CheckExplode(_transform.position))
+            if (warhead.CheckExplode(_transform.position)) // TODO: Make not blow up on player / self and change prefab back to target layer
                 Destroy(gameObject);
             
 
@@ -118,8 +134,9 @@ namespace Missiles
                     (aeroBody.rb.velocity - _lastVelocity) * Util.InverseFDeltaTime,
                     _targetTransform.position, targetVelocity);
 
-                if (!Util.VectorIsNan(direction))
+                if (!Util.VectorIsNan(direction)) 
                     aeroBody.SetControl(ControlToDirection(direction));
+
             }
             else
                 aeroBody.SetControl(Vector3.zero);
@@ -128,6 +145,8 @@ namespace Missiles
             _lastTargetPosition = _targetTransform?.position ?? InvalidTarget;
             _lastVelocity = aeroBody.rb.velocity;
         }
+
+        private float _maxGees;
         
         private Vector3 ControlToDirection(Vector3 forward)
         {
@@ -138,8 +157,12 @@ namespace Missiles
             // this is not really a good way of doing this because its artificially limiting
             Vector3 acceleration = (aeroBody.rb.velocity - _lastVelocity) * Util.InverseFDeltaTime;
             float geeForce = Vector3.ProjectOnPlane(acceleration, _transform.forward).magnitude * InverseGrav;
-            float controlCoefficient = -0.04f * Mathf.Clamp((avionics.maxOverloadGees - geeForce) / avionics.maxOverloadGees, 0, 1);
+            float controlCoefficient = -0.05f * overloadControlCurve.Evaluate(geeForce / avionics.maxOverloadGees); // TODO: should probably be damped using the pitch and yaw diffs
 
+            if (geeForce > _maxGees)
+                _maxGees = geeForce;
+            // Debug.Log($"{geeForce}G, cc: {controlCoefficient}, Max G force: {_maxGees}");
+            
             return new Vector3(pitch * controlCoefficient, yaw * controlCoefficient, 0);
         }
 

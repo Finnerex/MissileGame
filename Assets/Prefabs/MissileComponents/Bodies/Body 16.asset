@@ -12,5 +12,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 02ac580dfe7f432c8750a9972716ce60, type: 3}
   m_Name: Body 16
   m_EditorClassIdentifier: 
+  displayName: 
   size: 16
-  prefab: {fileID: 919132149155446097, guid: 55bf94e54a6afcc4ea2c67db3601d341, type: 3}
+  prefab: {fileID: 5325902964530076838, guid: 508aeef7382c8454e940a327310b6d10, type: 3}

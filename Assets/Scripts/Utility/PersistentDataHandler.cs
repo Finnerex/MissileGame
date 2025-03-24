@@ -10,7 +10,7 @@ namespace Utility
             string path = Path.Combine(Application.persistentDataPath, fileName);
             Directory.CreateDirectory(Path.GetDirectoryName(path));
             
-            string dataToWrite = JsonUtility.ToJson(obj); // TODO: REMOVE NEWTONSOFT PACKAGE
+            string dataToWrite = JsonUtility.ToJson(obj);
             
             // save that to a file
             using FileStream stream = new FileStream(path, FileMode.Create);

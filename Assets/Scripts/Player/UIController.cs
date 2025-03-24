@@ -1,7 +1,9 @@
 ﻿using System;
+using TMPro;
 using UnityEngine;
+using Utility;
 
-namespace Utility
+namespace Player
 {
     public class UIController : MonoBehaviour
     {
@@ -11,6 +13,8 @@ namespace Utility
         public RectTransform missileGimbalCircle;
 
         [NonSerialized] public RectTransform MissileLockRect;
+
+        public TextMeshProUGUI selectedMissileText;
         
         private void Awake()
         {
