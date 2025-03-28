@@ -8,27 +8,29 @@ using Random = System.Random;
 
 public class DLATerrainGenerator : MonoBehaviour
 {
-    // [SerializeField] private ComputeShader DLAComputeShader;
-    
+    [SerializeField] private ComputeShader DLAComputeShader;
+
     [SerializeField] private int resolutionTarget = 512;
-    [SerializeField] private int startSize = 8;
+    [SerializeField] private int startSize = 8; // TODO, end size must be power of 2
 
     [SerializeField] private int blurAmount = 3;
     [SerializeField] private int smoothingIterations = 2;
     [SerializeField] private int smoothAmount = 2;
-    
+
     [SerializeField] [Range(0, 0.7f)] private float fillThreshold = 0.2f;
-    
+
     [SerializeField] private int peaks = 4;
+
     [SerializeField] private AnimationCurve ridgeFalloffCurve;
+
     // [SerializeField] private float falloffMax = 20; // effectively correlates to range scale
     [SerializeField] private float heightScale = 15;
-    
+
     [SerializeField] private bool randomSeed;
     [SerializeField] private int seed;
 
     public OutputMode outputMode = OutputMode.Mesh;
-    
+
     [HideInInspector] public float meshScale = 10;
     [HideInInspector] public MeshFilter meshFilter; // change to getcomponent
 
@@ -38,31 +40,32 @@ public class DLATerrainGenerator : MonoBehaviour
 
     private List<Node> _rootNodes;
     private Node[,] _map;
-    private Texture2D/*float[,]*/ _heightmap;
+    private Flattened2DArray<float> /*float[,]*/ _heightmap;
     private int _currentSize;
 
     private int _pixelsFilled;
     private Random _random; // might use unity static random maybe
-    
-    private static readonly int ShaderInputTexID = Shader.PropertyToID("Input");
-    private static readonly int ShaderOutputTexID = Shader.PropertyToID("Output");
+
+    private static readonly int ShaderInputBufID = Shader.PropertyToID("Input");
+    private static readonly int ShaderOutputBufID = Shader.PropertyToID("Output");
     private static readonly int BlurSizeID = Shader.PropertyToID("blurSize");
+    
 
     public void GenerateTerrain()
     {
         var watch = System.Diagnostics.Stopwatch.StartNew();
-        
+
         // initialization
         _map = new Node[startSize, startSize];
-        _heightmap = new Texture2D(startSize, startSize, TextureFormat.RFloat, false);//float[startSize, startSize];
-        
+        _heightmap = new Flattened2DArray<float>(startSize, startSize);//float[startSize, startSize];
+
         _currentSize = startSize;
 
         if (randomSeed)
             seed = new Random().Next();
-       
+
         _random = new Random(seed);
-        
+
         // peaks / root nodes
         _rootNodes = new List<Node>();
         _pixelsFilled = 0;
@@ -70,14 +73,16 @@ public class DLATerrainGenerator : MonoBehaviour
         {
             int x = _random.Next(0, _currentSize);
             int y = _random.Next(0, _currentSize);
-        
+
             if (_map[x, y] != null) continue;
-            
+
             Node start = new Node(x, y);
             _map[x, y] = start;
             _rootNodes.Add(start);
             _pixelsFilled++;
         }
+
+        
 
         // main generation
         while (_currentSize < resolutionTarget)
@@ -85,15 +90,16 @@ public class DLATerrainGenerator : MonoBehaviour
             // add new nodes until some amount full
             while (_pixelsFilled <= _currentSize * _currentSize * fillThreshold)
                 AddPixel();
-            
+
             // upscale both maps and blur
             _currentSize *= 2;
             _pixelsFilled *= 2;
-            
+
             UpscaleDetailed();
-            
             UpdateAndScaleHeightmap();
+            
         }
+        
         
         // one final pass
         while (_pixelsFilled <= _currentSize * _currentSize * fillThreshold)
@@ -101,12 +107,11 @@ public class DLATerrainGenerator : MonoBehaviour
         
         foreach (Node node in _rootNodes)
             AddDetailedWithFalloff(node);
-        
-        _heightmap.Apply();
 
         for (int i = 0; i < smoothingIterations; i++)
             _heightmap = Blur(_heightmap, smoothAmount);
         
+
         watch.Stop();
         Debug.Log($"Generated Terrain Heightmap in {watch.Elapsed.TotalMilliseconds}ms");
 
@@ -120,12 +125,12 @@ public class DLATerrainGenerator : MonoBehaviour
                 ApplyToTerrain();
                 break;
             case OutputMode.Heightmap:
-                SaveGrayscaleImage(_heightmap, heightmapFileLocation);
+                SaveGrayscaleImage(_heightmap, heightmapFileLocation  + "map.png");
                 break;
         }
-        
+
     }
-    
+
     private void AddPixel()
     {
         // start in an empty space
@@ -135,7 +140,7 @@ public class DLATerrainGenerator : MonoBehaviour
             x = _random.Next(0, _currentSize);
             y = _random.Next(0, _currentSize);
         } while (_map[x, y] != null);
-        
+
         // move until it hits something
         while (true)
         {
@@ -155,7 +160,7 @@ public class DLATerrainGenerator : MonoBehaviour
                 y += dy;
                 continue;
             }
-            
+
             Node newNode = new Node(x, y);
             _map[x, y] = newNode;
             hitNode.Children.Add(newNode);
@@ -163,25 +168,25 @@ public class DLATerrainGenerator : MonoBehaviour
             _pixelsFilled++;
             return;
         }
-        
+
     }
-    
+
     private void UpscaleDetailed()
     {
         // current size is now updated
         _map = new Node[_currentSize, _currentSize];
-        
+
         foreach (Node node in _rootNodes)
             UpscaleSingleDetailed(node);
     }
 
     private void UpscaleSingleDetailed(Node node)
     {
-        node.Fx *= 2;
+        node.fx *= 2;
         // node.Fx += (float)_random.NextDouble() - 0.5f;
-        node.Fy *= 2;
+        node.fy *= 2;
         // node.Fy += (float)_random.NextDouble() - 0.5f;
-        _map[node.X, node.Y] = node;
+        _map[node.x, node.y] = node;
 
         List<Node> oldChildren = node.Children;
         node.Children = new List<Node>();
@@ -189,18 +194,18 @@ public class DLATerrainGenerator : MonoBehaviour
         foreach (Node child in oldChildren)
         {
             // make a point in between
-            float dx = (child.Fx * 2 - node.Fx) * 0.5f;
-            float dy = (child.Fy * 2 - node.Fy) * 0.5f;
+            float dx = (child.fx * 2 - node.fx) * 0.5f;
+            float dy = (child.fy * 2 - node.fy) * 0.5f;
 
             // random jiggle
-            float x = node.Fx + dx + ((float)_random.NextDouble() - 0.5f);
-            float y = node.Fy + dy + ((float)_random.NextDouble() - 0.5f);
+            float x = node.fx + dx + ((float)_random.NextDouble() - 0.5f);
+            float y = node.fy + dy + ((float)_random.NextDouble() - 0.5f);
 
             x = Math.Clamp(x, 0, _currentSize - 1);
             y = Math.Clamp(y, 0, _currentSize - 1);
 
             Node newChild = new Node(x, y);
-            _map[newChild.X, newChild.Y] = newChild;
+            _map[newChild.x, newChild.y] = newChild;
 
             node.Children.Add(newChild);
             newChild.Children.Add(child);
@@ -208,138 +213,78 @@ public class DLATerrainGenerator : MonoBehaviour
             // do all this to the children (i sure love recursion)
             UpscaleSingleDetailed(child);
         }
-        
+
     }
-    
+
     private void AddUpscaleBlurred()
     {
         // convolution and linear interpolation upscale
         var watch = System.Diagnostics.Stopwatch.StartNew();
-        
+
         _heightmap = LerpScale(_heightmap);
         _heightmap = Blur(_heightmap, blurAmount);
         
         watch.Stop();
         Debug.Log($"Completetd blur and lerpscale in {watch.Elapsed.TotalMilliseconds}ms");
     }
-    
-    private Texture2D LerpScale(Texture2D input) // now that im not doing the shader this should be a 2d array not a texture
+
+    private Flattened2DArray<float> LerpScale(Flattened2DArray<float> input)
     {
+        return DispatchToShader(input, "Upscale");
+    }
+
+    // HDRP Fuckin sucks idk how to make the compute shader work eventhough it did elswise
+    private Flattened2DArray<float> DispatchToShader(Flattened2DArray<float> input, string kernelName) // TODO try testing with set in/outs
+    {
+        int kernelIndex = DLAComputeShader.FindKernel(kernelName); // should probably cache
         
-        Texture2D output = new Texture2D(_currentSize, _currentSize);
-        int oldSize = _currentSize / 2;
+        DLAComputeShader.SetInt("size", input.Width); // cache please
+        Debug.Log($"kernel: {kernelName}, cs: {_currentSize}, ins{input.Width}, tg: {((float)_currentSize + 7) * 0.125f}");
+
+        ComputeBuffer inputBuffer = new ComputeBuffer(input.Height * input.Width, sizeof(float), ComputeBufferType.Structured);
+        inputBuffer.SetData(input.As1DArray());
+
+        Flattened2DArray<float> output = new Flattened2DArray<float>(_currentSize, _currentSize);
+        ComputeBuffer outputBuffer = new ComputeBuffer(_currentSize * _currentSize, sizeof(float), ComputeBufferType.Structured);
+        outputBuffer.SetData(output.As1DArray());
+
+        DLAComputeShader.SetBuffer(kernelIndex, ShaderInputBufID, inputBuffer);
+        DLAComputeShader.SetBuffer(kernelIndex, ShaderOutputBufID, outputBuffer);
+
+        int threadGroups = Mathf.CeilToInt(((float)_currentSize + 7) * 0.125f);
+
+        DLAComputeShader.Dispatch(kernelIndex, threadGroups, threadGroups, 1);
+        outputBuffer.GetData(output.As1DArray());
         
-        for (int y = 0; y < oldSize; y++)
-        for (int x = 0; x < oldSize; x++)
-        {
-            float val = input.GetPixel(y, x).r;
-            float right = (x + 1 < oldSize) ? input.GetPixel(y, x + 1).r : val;
-            float bottom = (y + 1 < oldSize) ? input.GetPixel(y + 1, x).r : val;
-            float bottomRight = (x + 1 < oldSize && y + 1 < oldSize) ? input.GetPixel(y + 1, x + 1).r : val;
-        
-            // Assign interpolated values
-            output.SetPixel(y * 2, x * 2, new Color(val, 1, 1, 1));
-            output.SetPixel(y * 2, x * 2 + 1, new Color((val + right) * 0.5f, 1, 1, 1));
-            output.SetPixel(y * 2 + 1, x * 2, new Color((val + bottom) * 0.5f, 1, 1, 1));
-            output.SetPixel(y * 2 + 1, x * 2 + 1, new Color((val + right + bottom + bottomRight) * 0.25f, 1, 1, 1));
-        }
-        
-        output.Apply();
+        inputBuffer.Release();
+        outputBuffer.Release();
         
         return output;
-        
-        // return DispatchToShader(input, "Upscale");
     }
-    // HDRP Fuckin sucks idk how to make the compute shader work eventhough it did elswise
-    // private Texture2D DispatchToShader(Texture2D input, string kernelName)
-    // {
-    //     RenderTexture output = new RenderTexture(_currentSize, _currentSize, 0, RenderTextureFormat.RFloat)
-    //     {
-    //         enableRandomWrite = true,
-    //         graphicsFormat = GraphicsFormat.R32_SFloat
-    //     };
-    //     
-    //     output.Create();
-    //     
-    //     int upscaleKernel = DLAComputeShader.FindKernel(kernelName); // should probably cache
-    //     
-    //     DLAComputeShader.SetTexture(upscaleKernel, ShaderInputTexID, input);
-    //     DLAComputeShader.SetTexture(upscaleKernel, ShaderOutputTexID, output);
-    //     
-    //     int threadGroups = Mathf.CeilToInt(_currentSize * 0.25f);
-    //     
-    //     DLAComputeShader.Dispatch(upscaleKernel, threadGroups, threadGroups, 1);
-    //     return RenderTextureToTexture2D(output);
-    // }
-    //
-    // Texture2D RenderTextureToTexture2D(RenderTexture rTex)
-    // {
-    //     Texture2D tex = new Texture2D(rTex.width, rTex.height, TextureFormat.RGBA32, false);
-    //     
-    //     // Copy the RenderTexture to Texture2D
-    //     RenderTexture.active = rTex;
-    //     tex.ReadPixels(new Rect(0, 0, rTex.width, rTex.height), 0, 0);
-    //     tex.Apply();
-    //
-    //     RenderTexture.active = null;
-    //     return tex;
-    // }
     
-    private Texture2D Blur(Texture2D image, int blurSize)
+
+    private Flattened2DArray<float> Blur(Flattened2DArray<float> image, int blurSize)
     {
         
-        Texture2D blurredImage = new Texture2D(_currentSize, _currentSize);
+        blurSize = Math.Max(1, blurSize);
+        DLAComputeShader.SetInt(BlurSizeID, blurSize);
+        return DispatchToShader(image, "Blur");
         
-        // Iterate through each pixel in the image
-        for (int y = 0; y < _currentSize; y++)
-        for (int x = 0; x < _currentSize; x++)
-        {
-            float sum = 0;
-            int count = 0;
-        
-            // Iterate over the neighborhood defined by the blur radius
-            for (int dy = -blurSize; dy <= blurSize; dy++)
-            for (int dx = -blurSize; dx <= blurSize; dx++)
-            {
-                int nx = x + dx;
-                int ny = y + dy;
-        
-                // Check if the neighbor is within bounds
-                if (nx < 0 || nx >= _currentSize || ny < 0 || ny >= _currentSize) continue;
-                
-                sum += image.GetPixel(ny, nx).r;
-                count++;
-            }
-        
-            // Compute the average and assign the new blurred value
-            // blurredImage[y, x] = sum / count;
-            blurredImage.SetPixel(y, x, new Color(sum / count, 1, 1, 1));
-        }
-        
-        blurredImage.Apply();
-        
-        return blurredImage;
-        
-        // blurSize = Math.Max(1, blurSize);
-        // DLAComputeShader.SetInt(BlurSizeID, blurSize);
-        // return DispatchToShader(image, "Blur");
     }
 
     private void UpdateAndScaleHeightmap()
     {
         AddUpscaleBlurred();
-
+        
         foreach (Node node in _rootNodes)
             AddDetailedWithFalloff(node);
-        
-        _heightmap.Apply();
         
     }
 
     private void AddDetailedWithFalloff(Node node)
     {
         GetNodeHeights(node);
-        ApplyNodeHeights(node, node.height);
+        ApplyNodeHeights(node, node.Height);
     }
 
     private int GetNodeHeights(Node node)
@@ -353,7 +298,7 @@ public class DLATerrainGenerator : MonoBehaviour
                 max = height;
         }
 
-        node.height = max + 1;
+        node.Height = max + 1;
         
         return max + 1;
     }
@@ -361,10 +306,8 @@ public class DLATerrainGenerator : MonoBehaviour
     private void ApplyNodeHeights(Node node, int maxHeight)
     {
         
-        Color color = _heightmap.GetPixel(node.X, node.Y);
-        color.r += heightScale * ridgeFalloffCurve.Evaluate((float)node.height / maxHeight);
-        _heightmap.SetPixel(node.X, node.Y, color);
-        
+        _heightmap[node.x, node.y] += heightScale * ridgeFalloffCurve.Evaluate((float)node.Height / maxHeight);
+
         foreach (Node child in node.Children)
             ApplyNodeHeights(child, maxHeight);
 
@@ -382,14 +325,13 @@ public class DLATerrainGenerator : MonoBehaviour
 
         // Generate vertices and UVs
         for (int z = 0; z < height; z++)
+        for (int x = 0; x < width; x++)
         {
-            for (int x = 0; x < width; x++)
-            {
-                int index = z * width + x;
-                vertices[index] = new Vector3(x * meshScale, _heightmap.GetPixel(x, z).r, z * meshScale);
-                uvs[index] = new Vector2((float)x / width, (float)z / height);
-            }
+            int index = z * width + x;
+            vertices[index] = new Vector3(x * meshScale, _heightmap[x, z], z * meshScale);
+            uvs[index] = new Vector2((float)x / width, (float)z / height);
         }
+        
 
         // Generate triangles
         int triangleIndex = 0;
@@ -428,23 +370,21 @@ public class DLATerrainGenerator : MonoBehaviour
         meshFilter.mesh = mesh;
     }
     
-    private void SaveGrayscaleImage(Texture2D pixelValues, string filePath)
+    private void SaveGrayscaleImage(Flattened2DArray<float> pixelValues, string filePath)
     {
-        int width = _currentSize;
-        int height = _currentSize;
+        int width = pixelValues.Width;
+        int height = pixelValues.Height;
 
         // Find min and max values in the float array
         float minValue = float.MaxValue;
         float maxValue = float.MinValue;
 
         for (int y = 0; y < height; y++)
+        for (int x = 0; x < width; x++)
         {
-            for (int x = 0; x < width; x++)
-            {
-                float value = pixelValues.GetPixel(x, y).r;
-                if (value < minValue) minValue = value;
-                if (value > maxValue) maxValue = value;
-            }
+            float value = pixelValues[x, y];
+            if (value < minValue) minValue = value;
+            if (value > maxValue) maxValue = value;
         }
 
         // Avoid division by zero if all values are the same
@@ -454,16 +394,14 @@ public class DLATerrainGenerator : MonoBehaviour
         Texture2D texture = new Texture2D(width, height, TextureFormat.RFloat, false);
 
         for (int y = 0; y < height; y++)
+        for (int x = 0; x < width; x++)
         {
-            for (int x = 0; x < width; x++)
-            {
-                // Normalize value between 0 and 1
-                float normalizedValue = (pixelValues.GetPixel(x, y).r - minValue) / range;
-                Color color = new Color(normalizedValue, normalizedValue, normalizedValue); // Grayscale
-                texture.SetPixel(x, y, color);
-            }
+            // Normalize value between 0 and 1
+            float normalizedValue = (pixelValues[x, y] - minValue) / range;
+            Color color = new Color(normalizedValue, normalizedValue, normalizedValue); // Grayscale
+            texture.SetPixel(x, y, color);
         }
-
+        
         texture.Apply();
 
         // Encode to PNG and save the file
@@ -482,14 +420,27 @@ public class DLATerrainGenerator : MonoBehaviour
         int height = _currentSize;
         TerrainData terrainData = terrain.terrainData;
         terrainData.heightmapResolution = _currentSize + 1;
-
-        float[,] heights = new float[width, height];
-        // float maxTerrainHeight = terrainData.size.y;
+        
+        float minValue = float.MaxValue;
+        float maxValue = float.MinValue;
 
         for (int y = 0; y < height; y++)
         for (int x = 0; x < width; x++)
-            heights[y, x] = _heightmap.GetPixel(x, y).r; // Normalize height
+        {
+            float value = _heightmap[x, y];
+            if (value < minValue) minValue = value;
+            if (value > maxValue) maxValue = value;
+        }
         
+        float range = maxValue - minValue;
+        if (range == 0) range = 1;
+
+        float[,] heights = new float[width, height];
+
+        for (int y = 0; y < height; y++)
+        for (int x = 0; x < width; x++)
+            heights[y, x] = _heightmap[x, y] / range;
+
         terrainData.SetHeights(0, 0, heights);
     }
     

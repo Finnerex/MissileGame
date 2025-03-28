@@ -33,7 +33,7 @@ namespace Player
         private static readonly int JiggleStrength = Shader.PropertyToID("_JiggleStrength");
         private static readonly int Alpha = Shader.PropertyToID("_Alpha");
 
-        private const float RollThreshold = 2;
+        private const float RollThreshold = 5;
 
         [SerializeField] private PIDController pid;
 
@@ -94,12 +94,12 @@ namespace Player
             if (control.x == 0)
             {
                 float pitchAngle = Util.AngleAroundAxis(targetDirection.forward, _transform.forward, _transform.right);
-                control.x = pitchAngle * -0.08f;
+                control.x = pitchAngle * -0.12f;
             }
             
             float yawAngle = Util.AngleAroundAxis(targetDirection.forward, _transform.forward, _transform.up);
             if (control.y == 0)
-                control.y = yawAngle * 0.1f;
+                control.y = yawAngle * 0.25f;
             
             if (control.z == 0 && !Input.GetKey(KeyCode.C))
             {
@@ -109,7 +109,7 @@ namespace Player
                     > RollThreshold => yawAngle - RollThreshold,
                     < -RollThreshold => yawAngle + RollThreshold,
                     _ => -rollAngle / RollThreshold // auto level - should be somehow mixed with the other thing
-                } * 0.04f;
+                } * 0.05f;
             }
             
             

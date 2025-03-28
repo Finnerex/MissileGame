@@ -2,51 +2,56 @@
 #pragma kernel Upscale
 
 // Input Texture and Output RWTexture
-Texture2D<float> Input;
-RWTexture2D<float> Output;
+RWStructuredBuffer<float> Input;
+RWStructuredBuffer<float> Output;
+uint size;
 
 int blurSize;
 
 [numthreads(8,8,1)]
 void Blur(uint3 id : SV_DispatchThreadID) {
-    uint width, height;
-    Input.GetDimensions(width, height);
 
+    if (id.x >= size || id.y >= size)
+        return;
+    
+    const uint index = id.y * size + id.x;
+    
     float sum = 0;
     uint count = 0;
 
     for (int y = -blurSize; y <= blurSize; y++)
-        for (int x = -blurSize; x <= blurSize; x++) {
+    {
+        for (int x = -blurSize; x <= blurSize; x++)
+        {
             int nx = id.x + x;
             int ny = id.y + y;
 
-            if (nx < 0 || nx >= width || ny < 0 || ny >= height) continue;
-
-            sum += Input.Load(int3(nx, ny, 0));
+            if (nx < 0 || nx >= size || ny < 0 || ny >= size) continue;
+            
+            sum += Input[ny * size + nx];
             count++;
+            
         }
-
-    Output[uint2(id.x, id.y)] = sum / count;
+    }
+    
+    Output[index] = sum / count;
 }
 
 [numthreads(8,8,1)]
-void Upscale(uint3 id : SV_DispatchThreadID) {
-    uint width, height;
-    Input.GetDimensions(width, height);
-
-    uint newWidth = width * 2;
-    uint newHeight = height * 2;
-
-    if (id.x >= newWidth || id.y >= newHeight)
+void Upscale(uint3 id : SV_DispatchThreadID) { // size should be set to size prior to upscale 
+    uint newSize = size * 2;
+    
+    if (id.x >= newSize || id.y >= newSize)
         return;
+    
+    const uint x = id.x / 2;
+    const uint y = id.y / 2;
+    
 
-    uint x = id.x / 2;
-    uint y = id.y / 2;
-
-    float val = Input.Load(int3(x, y, 0)); 
-    float right = (x + 1 < width) ? Input.Load(int3(x + 1, y, 0)) : val;
-    float bottom = (y + 1 < height) ? Input.Load(int3(x, y + 1, 0)) : val;
-    float bottomRight = (x + 1 < width && y + 1 < height) ? Input.Load(int3(x + 1, y + 1, 0)) : val;
+    const float val = Input[y * size + x];
+    const float right = (x + 1 < size) ? Input[y * size + (x + 1)] : val;
+    const float bottom = (y + 1 < size) ? Input[(y + 1) * size + x] : val;
+    const float bottomRight = (x + 1 < size && y + 1 < size) ? Input[(y + 1) * size + (x + 1)] : val;
 
     float result;
     if (id.x % 2 == 0 && id.y % 2 == 0)
@@ -57,6 +62,6 @@ void Upscale(uint3 id : SV_DispatchThreadID) {
         result = (val + bottom) / 2;
     else
         result = (val + right + bottom + bottomRight) / 4;
-
-    Output[uint2(id.x, id.y)] = result;
+    
+    Output[id.y * newSize + id.x] = result;
 }

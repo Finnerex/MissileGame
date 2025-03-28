@@ -37,10 +37,3 @@ public class TerrainGeneratorEditor : Editor
     
 }
 #endif
-
-public enum OutputMode
-{
-    Mesh,
-    Terrain,
-    Heightmap
-}
