@@ -13,6 +13,13 @@ MonoBehaviour:
   m_Name: Cpu T2-3
   m_EditorClassIdentifier: 
   displayName: 
+  cost:
+  - componentItem: 1
+    amount: 1
+  - componentItem: 0
+    amount: 1
+  - componentItem: 7
+    amount: 2
   size: 3
   guidanceType: 2
   hasInertialGuidance: 0

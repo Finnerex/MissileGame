@@ -9,9 +9,11 @@ namespace Hangar
 
         public static SceneChangeDataManager Instance;
 
-        public Dictionary<int, MissilePreset> WeaponSystemMissiles;
-        
-        private void Start()
+        public Dictionary<int, MissilePreset> WeaponSystemMissiles = new();
+
+        public Dictionary<ComponentItem, int> LootedComponents = new();
+
+        private void Awake()
         {
             Instance = this;
             DontDestroyOnLoad(gameObject);

@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using Targeting;
+using Unity.PlasticSCM.Editor.WebApi;
 using UnityEngine;
 
 namespace Missiles
@@ -17,8 +18,8 @@ namespace Missiles
 
         [SerializeField] private Rigidbody rb;
         
-        public Queue<Missile> currentMissileQueue => _missiles.Peek().Item2;
-        public string currentMissileName => _missiles.Peek().Item1; 
+        public Queue<Missile> currentMissileQueue => _missiles.TryPeek(out (string, Queue<Missile>) current) ? current.Item2 : null;
+        public string currentMissileName => _missiles.TryPeek(out (string, Queue<Missile>) current) ? current.Item1 : null; 
         public Missile nextMissile => currentMissileQueue.TryPeek(out Missile next) ? next : null;
         
         public int missileCount { get; private set; }
@@ -26,7 +27,8 @@ namespace Missiles
 
         public bool TryGetNext(out Missile next)
         {
-            return currentMissileQueue.TryPeek(out next);
+            next = null;
+            return currentMissileQueue != null && currentMissileQueue.TryPeek(out next);
         }
 
         public void FireNext()
@@ -40,6 +42,7 @@ namespace Missiles
 
         public void CycleMissile()
         {
+            if (_missiles.Count <= 0) return;
             _missiles.Enqueue(_missiles.Dequeue());
         }
 

@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System.Text.RegularExpressions;
+using UnityEngine;
 
 namespace Utility
 {
@@ -26,6 +27,10 @@ namespace Utility
 
         // public static Quaternion InvertRotation(Quaternion rotation) =>
         //     rotation * Quaternion.AngleAxis(180, Vector3.up);
+
+        public static string GetNiceName(string input) => Regex.Replace(input, "(?<!^)([A-Z])", " $1").Trim();
+
+        public static Vector3 VectorMultiplyComponents(Vector3 a, Vector3 b) => new(a.x * b.x, a.y * b.y, a.z * b.z);
 
     }
 }

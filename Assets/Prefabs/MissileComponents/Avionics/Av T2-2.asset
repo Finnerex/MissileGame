@@ -13,6 +13,11 @@ MonoBehaviour:
   m_Name: Av T2-2
   m_EditorClassIdentifier: 
   displayName: 
+  cost:
+  - componentItem: 2
+    amount: 2
+  - componentItem: 2
+    amount: 6
   size: 2
   prefab: {fileID: 1557880425961518039, guid: e421f8068565d9f498edd4ecef409aa9, type: 3}
   maxOverloadGees: 15

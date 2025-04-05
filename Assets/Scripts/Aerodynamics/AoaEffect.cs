@@ -22,7 +22,7 @@ namespace Aerodynamics
 
         private void Update()
         {
-            bool aboveThreshold = Mathf.Abs(referenceSurface.aoa) > aoaThreshold;
+            bool aboveThreshold = referenceSurface.aoa > aoaThreshold;
 
             if (!_emitting && aboveThreshold &&
                 rb.velocity.sqrMagnitude > _sqrSpeedRange.x && rb.velocity.sqrMagnitude < _sqrSpeedRange.y)

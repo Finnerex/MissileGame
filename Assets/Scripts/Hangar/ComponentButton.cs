@@ -29,7 +29,7 @@ namespace Hangar
         {
             _spawnedTooltip = Instantiate(tooltipPrefab, Input.mousePosition, Quaternion.identity, transform.parent.parent.parent.parent.parent); // lmao i love programming
             _spawnedTooltip.transform.SetAsLastSibling();
-            _spawnedTooltip.SetText(Component.ToString());
+            _spawnedTooltip.SetText(Component.CostString() + "\n" + Component);
         }
 
         public void OnStopHover()

@@ -1,9 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using Missiles;
 using Missiles.Components;
 using UnityEditor;
 using UnityEngine;
+using Utility;
+using ComponentCost = Missiles.ComponentCost;
 
 namespace Hangar
 {
@@ -11,7 +14,7 @@ namespace Hangar
     {
         // i would really appreciate it if i could load these dynamically using a file path but it seems that is very difficult
         public List<MissileComponent> componentInventory;
-        // public List<InventoryItem> ItemInventory; // things used to make the components
+        public SerializableDictionary<ComponentItem, int> ItemInventory; // things used to make the components
 
         [SerializeField] private ComponentButton itemPrefab;
         [SerializeField] private GameObject componentUI;
@@ -23,6 +26,22 @@ namespace Hangar
         private void Awake()
         {
             Instance = this;
+            ItemInventory = PersistentDataHandler.LoadObjectOrNew<SerializableDictionary<ComponentItem, int>>("InventoryItems");
+
+            // this might have to hella be changed
+            if (SceneChangeDataManager.Instance == null)
+            {
+                Debug.Log("This is no good");
+                return;
+            }
+            
+            foreach (var entry in SceneChangeDataManager.Instance.LootedComponents)
+                if (!ItemInventory.TryAdd(entry.Key, entry.Value))
+                    ItemInventory[entry.Key] += entry.Value;
+
+            // TODO: Add back the cost of the remaining missiles
+            SceneChangeDataManager.Instance.LootedComponents = new Dictionary<ComponentItem, int>();
+
         }
 
         private void Start()
@@ -49,5 +68,9 @@ namespace Hangar
             
         }
 
+        private void OnDestroy()
+        {
+            PersistentDataHandler.SaveObject("InventoryItems", ItemInventory);
+        }
     }
 }

@@ -15,17 +15,17 @@ namespace Hangar
         [NonSerialized] public Vector3 lastCameraPos;
 
         [NonSerialized] public MissilePreset? CurrentlySelectedPreset;
-        private readonly Dictionary<int, MissilePreset> _aircraftMissilePresets = new();
+        // private readonly Dictionary<int, MissilePreset> _aircraftMissilePresets = new();
 
         private void Awake()
         {
             Instance = this;
         }
 
-        private void OnDestroy()
-        {
-            SceneChangeDataManager.Instance.WeaponSystemMissiles = _aircraftMissilePresets;
-        }
+        // private void OnDestroy()
+        // {
+        //     SceneChangeDataManager.Instance.WeaponSystemMissiles = _aircraftMissilePresets;
+        // }
 
         public void SetEmptyMissile(int index, Transform t)
         {
@@ -35,7 +35,7 @@ namespace Hangar
 
             if (CurrentlySelectedPreset is null)
             {
-                _aircraftMissilePresets.Remove(index);
+                SceneChangeDataManager.Instance.WeaponSystemMissiles.Remove(index);
                 return;
             }
             
@@ -43,8 +43,8 @@ namespace Hangar
             
             GameObject body = Instantiate(CurrentlySelectedPreset.Value.body.prefab, t);
             Instantiate(avionicsPrefab, body.transform.position, t.rotation * avionicsPrefab.transform.rotation, t);
-            
-            _aircraftMissilePresets[index] = CurrentlySelectedPreset.Value;
+
+            SceneChangeDataManager.Instance.WeaponSystemMissiles[index] = CurrentlySelectedPreset.Value;
         }
 
     }

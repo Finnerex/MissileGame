@@ -1,4 +1,5 @@
-﻿using Aerodynamics;
+﻿using System.Collections;
+using Aerodynamics;
 using TMPro;
 using UnityEngine;
 using Utility;
@@ -15,6 +16,8 @@ namespace Player
         [SerializeField] private Camera cam;
         [SerializeField] private Transform targetDirection;
 
+        [SerializeField] private float controlSurfaceSpeed = 10f;
+
         [SerializeField] private GameObject thrusterA;
         [SerializeField] private GameObject thrusterB;
         [SerializeField] private float maxThrusterJiggleStrength = 0.0025f;
@@ -25,7 +28,8 @@ namespace Player
         
         private Transform _transform;
         private Vector3 _lastVelocity;
-        // private Vector3 control;
+        private Vector3 _currentControl;
+        
         private Material _thrusterAMaterial;
         private Material _thrusterBMaterial;
 
@@ -50,6 +54,29 @@ namespace Player
         {
 
             Vector3 control = Vector3.zero;
+
+
+            if (!Input.GetKey(KeyCode.C))
+            {
+                targetDirection.rotation = cam.transform.rotation;
+
+                // mouse control
+                float pitchAngle = Util.AngleAroundAxis(targetDirection.forward, _transform.forward, _transform.right);
+                float yawAngle = Util.AngleAroundAxis(targetDirection.forward, _transform.forward, _transform.up);
+                float rollAngle = Util.AngleAroundAxis(Vector3.down, -_transform.up, _transform.forward);
+
+                control.x = pitchAngle * -0.08f;
+                control.y = yawAngle * 0.06f;
+                control.z = yawAngle switch
+                {
+                    > RollThreshold => yawAngle - RollThreshold,
+                    < -RollThreshold => yawAngle + RollThreshold,
+                    _ => -rollAngle / RollThreshold // auto level - should be somehow mixed with the other thing
+                } * 0.04f;
+            }
+            else
+                targetDirection.rotation = transform.rotation;
+            
             
             // key control
             if (Input.GetKey(KeyCode.W))
@@ -62,19 +89,6 @@ namespace Player
             if (Input.GetKey(KeyCode.E))
                 control.y -= 1;
             
-            
-            
-            if (Input.GetKey(KeyCode.C))
-            {
-                if (control != Vector3.zero)
-                    targetDirection.rotation = _transform.rotation;
-            }
-            else // mouse control
-                targetDirection.rotation = cam.transform.rotation;
-            
-            
-            
-            // separate roll because idk
             if (Input.GetKey(KeyCode.A))
                 control.z += 1;
             if (Input.GetKey(KeyCode.D))
@@ -89,31 +103,27 @@ namespace Player
                 else if (Input.GetKey(KeyCode.S))
                     trim.x -= 0.001f;
             }
+            
+            Vector3 localAngularVelocity = transform.InverseTransformDirection(aeroBody.rb.angularVelocity);
 
+            Vector3 pidOut = pid.Update(-localAngularVelocity, Time.deltaTime);
 
             if (control.x == 0)
-            {
-                float pitchAngle = Util.AngleAroundAxis(targetDirection.forward, _transform.forward, _transform.right);
-                control.x = pitchAngle * -0.12f;
-            }
-            
-            float yawAngle = Util.AngleAroundAxis(targetDirection.forward, _transform.forward, _transform.up);
+                control.x = pidOut.x;
             if (control.y == 0)
-                control.y = yawAngle * 0.25f;
+                control.y = pidOut.y;
+
+
+            control += trim;
+
+            Vector3 surfaceDirections = Vector3.zero;
+            surfaceDirections.x = control.x > _currentControl.x ? 1 : -1;
+            surfaceDirections.y = control.y > _currentControl.y ? 1 : -1;
+            surfaceDirections.z = control.z > _currentControl.z ? 1 : -1;
+
+            _currentControl += surfaceDirections * (controlSurfaceSpeed * Time.deltaTime);
             
-            if (control.z == 0 && !Input.GetKey(KeyCode.C))
-            {
-                float rollAngle = Util.AngleAroundAxis(Vector3.down, -_transform.up, _transform.forward);
-                control.z = yawAngle switch
-                {
-                    > RollThreshold => yawAngle - RollThreshold,
-                    < -RollThreshold => yawAngle + RollThreshold,
-                    _ => -rollAngle / RollThreshold // auto level - should be somehow mixed with the other thing
-                } * 0.05f;
-            }
-            
-            
-            aeroBody.SetControl(trim + control);
+            aeroBody.SetControl(_currentControl);
 
             if (Input.GetKey(KeyCode.LeftShift))
                 engine.Throttle += throttleStep * Time.deltaTime;
@@ -126,6 +136,10 @@ namespace Player
             
             DrawInstructor();
         }
+
+
+            
+        
 
         private void FixedUpdate()
         {

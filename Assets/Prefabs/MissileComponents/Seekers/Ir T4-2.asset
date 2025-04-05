@@ -13,6 +13,15 @@ MonoBehaviour:
   m_Name: Ir T4-2
   m_EditorClassIdentifier: 
   displayName: 
+  cost:
+  - componentItem: 4
+    amount: 4
+  - componentItem: 8
+    amount: 1
+  - componentItem: 7
+    amount: 2
+  - componentItem: 0
+    amount: 3
   size: 3
   isCaged: 0
   fieldOfView: 3

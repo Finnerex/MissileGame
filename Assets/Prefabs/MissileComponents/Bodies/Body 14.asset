@@ -13,5 +13,10 @@ MonoBehaviour:
   m_Name: Body 14
   m_EditorClassIdentifier: 
   displayName: 
+  cost:
+  - componentItem: 2
+    amount: 7
+  - componentItem: 3
+    amount: 2
   size: 14
   prefab: {fileID: 5325902964530076838, guid: 07a521e0961dd7a44af3fff0ac4f6b6f, type: 3}

@@ -22,6 +22,8 @@ namespace Enemy
         [SerializeField] private Thruster engine;
         [SerializeField] private WeaponsSystem weaponsSystem;
         [SerializeField] private SpottingSystem spottingSystem;
+
+        [SerializeField] private float spottingPeriodSeconds = 10;
         
         [Header("Random Search")]
         [SerializeField] private Vector2 cruisingAltitudeRange;
@@ -30,12 +32,21 @@ namespace Enemy
         [SerializeField] private float maxAngleDifference = 30;
         [SerializeField] private Vector2 distanceRange = new (50, 400);
         [SerializeField] private Vector2 altitudeDifferenceRange = new(-50, 50);
+
+        [Header("Targeting")]
+        [SerializeField] private float targetAttackRange = 5000;
+        [SerializeField] private float targetDistanceToTarget = 500;
         
         private const float RollThreshold = 12;
         
         private State _aiState;
         private Vector3 _targetHeading;
         private Vector3 _targetPosition;
+        private Transform _target;
+
+        private float _currentSpotTime;
+
+        private float _sqrAttackRange;
 
         private Transform _transform;
 
@@ -52,6 +63,8 @@ namespace Enemy
 
             engine.Throttle = 0.9f;
             aeroBody.rb.velocity = _transform.forward * 150;
+
+            _sqrAttackRange = targetAttackRange * targetAttackRange;
         }
 
         private void Update()
@@ -67,6 +80,27 @@ namespace Enemy
             }
             // maybe periodic flares idk
             // prime directive - dont hit the ground
+            
+            Vector3 displacement = transform.position - _targetPosition;
+            
+            // maybe do this less frequently?
+            Vector3 control = Vector3.zero;
+                
+            float yawAngle = Util.AngleAroundAxis(_transform.forward, displacement, _transform.up);
+            float pitchAngle = Util.AngleAroundAxis(_transform.forward, displacement, _transform.right) + 1;
+            float rollAngle = Util.AngleAroundAxis(Vector3.down, -_transform.up, _transform.forward);
+            
+            // perchance dampen based on distance
+            control.x = pitchAngle * -0.05f;
+            control.y = yawAngle * 0.02f;
+            control.z = yawAngle switch
+            {
+                > RollThreshold => yawAngle - RollThreshold,
+                < -RollThreshold => yawAngle + RollThreshold,
+                _ => -rollAngle / RollThreshold // auto level - should be somehow mixed with the other thing
+            } * 0.02f;
+            
+            aeroBody.SetControl(control);
 
         }
 
@@ -78,38 +112,30 @@ namespace Enemy
             // maybe vary cruising altitude
             
             // track this wander using only _targetPosition
-
             Vector3 displacement = transform.position - _targetPosition;
 
             if (displacement.sqrMagnitude <= squareSearchCheckpointDistance)
                 _targetPosition = NextRandomPosition(); // should probably be some point not too far off of current direction, close ish by
-
-            // maybe do this less frequently?
-            Vector3 control = Vector3.zero;
-                
-            float yawAngle = Util.AngleAroundAxis(_transform.forward, displacement, _transform.up);
-            float pitchAngle = Util.AngleAroundAxis(_transform.forward, displacement, _transform.right) + 1;
-            float rollAngle = Util.AngleAroundAxis(Vector3.down, -_transform.up, _transform.forward);
             
-            // perchance dampen based on distance
-            control.x = pitchAngle * -0.05f - 0.1f;
-            control.y = yawAngle * 0.02f;
-            control.z = yawAngle switch
+            // spotting
+            _currentSpotTime += Time.deltaTime;
+            if (_currentSpotTime > spottingPeriodSeconds)
             {
-                > RollThreshold => yawAngle - RollThreshold,
-                < -RollThreshold => yawAngle + RollThreshold,
-                _ => -rollAngle / RollThreshold // auto level - should be somehow mixed with the other thing
-            } * 0.02f;
+                _currentSpotTime = 0;
+                spottingSystem.TrySpot();
+
+                _target = spottingSystem.GetClosest();
+                if (_target is null) return;
+
+                if ((_target.position - _transform.position).sqrMagnitude <= _sqrAttackRange) // among other positioning conditions
+                    _aiState = State.Tracking;
+
+            }
             
-            aeroBody.SetControl(control);
+            // dont put important code here bc i may have returned
             
         }
-
-        // private Vector3 RandomPositionInMap() => new (
-        //     Random.Range(cruisingAltitudeRange.x, cruisingAltitudeRange.y),
-        //     Random.Range(0, terrainSize.x),
-        //     Random.Range(0, terrainSize.y)
-        //     );
+        
 
         private Vector3 NextRandomPosition()
         {
@@ -134,6 +160,12 @@ namespace Enemy
             // fire missile if locked
             // flare if enemy missile / pre-flare if enemy behind & just in general 
             // _targetPosition should be behind the enemy, _targetHeading should be towards the enemy
+
+            _targetPosition = _target.position - _target.forward * targetDistanceToTarget;
+
+            if ((_target.position - _transform.position).sqrMagnitude <= _sqrAttackRange) // among other positioning conditions
+                _aiState = State.Searching;
+
         }
 
         private void OnDrawGizmos()

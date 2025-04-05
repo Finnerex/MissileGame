@@ -130,6 +130,8 @@ namespace Player
 
         private void SetMissileText()
         {
+            if (weaponsSystem.currentMissileQueue == null) return;
+            
             UIController.Instance.selectedMissileText.text =
                 $"{weaponsSystem.missileCount} | {weaponsSystem.currentMissileQueue.Count} {weaponsSystem.currentMissileName}";
         }

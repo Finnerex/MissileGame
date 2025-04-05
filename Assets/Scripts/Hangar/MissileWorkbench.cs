@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using Missiles;
 using Missiles.Components;
 using TMPro;
@@ -141,7 +142,8 @@ namespace Hangar
 
             // this is pretty objectively bad code, yet another result of my choice to not use an array
             if (currentPreset.body != null)
-                message += $"Space Available: {_remainingCapacity}u/{currentPreset.body.size}u";
+                message += $"Space Available: {_remainingCapacity}u/{currentPreset.body.size}u\n" +
+                           currentPreset.GetCost().Aggregate("Cost: \n", (current, c) => current + "  " + c);
 
             if (currentPreset.avionics != null)
                 message += "\n\nAvionics\n" + currentPreset.avionics;

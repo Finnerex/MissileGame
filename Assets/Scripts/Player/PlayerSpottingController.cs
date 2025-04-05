@@ -1,8 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using Targeting;
+﻿using Targeting;
 using UnityEngine;
-using Utility;
 
 namespace Player
 {
@@ -31,10 +28,9 @@ namespace Player
             if (spottingSystem.SpottedObjects.Count == 0)
                 return;
 
-            foreach (GameObject obj in spottingSystem.SpottedObjects)
+            foreach (Transform t in spottingSystem.SpottedObjects)
             {
-
-                Transform t = obj.transform;
+                if (t == null) continue;
                 Vector3 screenPosition = _cam.WorldToScreenPoint(t.position);
 
                 if (screenPosition.z <= 0) continue;

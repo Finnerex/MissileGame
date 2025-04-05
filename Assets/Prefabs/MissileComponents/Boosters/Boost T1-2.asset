@@ -13,6 +13,11 @@ MonoBehaviour:
   m_Name: Boost T1-2
   m_EditorClassIdentifier: 
   displayName: 
+  cost:
+  - componentItem: 6
+    amount: 1
+  - componentItem: 2
+    amount: 1
   size: 2
   burnTimeSeconds: 1.5
   thrustMultiplier: 25
